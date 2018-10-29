@@ -1,6 +1,4 @@
-from flask import Flask
-
-app = Flask(__name__)
+from voicereader import app
 
 
 @app.route('/')
