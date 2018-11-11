@@ -1,23 +1,32 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
+from flask_pymongo import PyMongo
 
-question_api = Blueprint('questions', __name__)
+_question_api = Blueprint('questions', __name__)
+mongo = PyMongo()
 
 
-@question_api.route('/', methods=['GET'])
+def get_question_api(app):
+    mongo.init_app(app)
+    return _question_api
+
+
+@_question_api.route('/', methods=['GET'])
 def fetch_all():
     return 'Question api'
 
 
-@question_api.route('/<question_id>', methods=['GET'])
+@_question_api.route('/<question_id>', methods=['GET'])
 def fetch_by_id(question_id):
-    pass
+    doc = mongo.db.users.find({})
+    return jsonify(doc)
 
 
-@question_api.route('/', methods=['POST'])
+@_question_api.route('/', methods=['POST'])
 def add():
-    pass
+    doc = mongo.db.users.insert({'abcd': 'abcd'})
+    return jsonify(doc)
 
 
-@question_api.route('/<question_id>', methods=['DELETE'])
+@_question_api.route('/<question_id>', methods=['DELETE'])
 def remove(question_id):
     pass
