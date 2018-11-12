@@ -35,9 +35,9 @@ def fetch_by_id(user_id):
 
 @_user_api.route('/', methods=['POST'])
 def add():
-    """ Function to create new users. """
+    """ Function to create new user. """
     try:
-        # Create new users
+        # Create new user
         try:
             body = ast.literal_eval(json.dumps(request.get_json()))
         except Exception as ex:
@@ -45,12 +45,10 @@ def add():
             # Add message for debugging purpose
             return ex, 400
 
+        body['_id'] = ObjectId()
         body["created_date"] = time.mktime(datetime.datetime.utcnow().timetuple())
-        body["photo_url"] = ""
 
-        record_created = mongo.db.users.insert(body)
-
-        body["_id"] = str(record_created)
+        mongo.db.users.insert(body)
 
         return jsonify(body), 201
     except Exception as ex:
@@ -100,7 +98,7 @@ def update(user_id):
 def remove(user_id):
     """ Function to remove the user. """
     try:
-        # Delete all the users matched
+        # Delete the user matched
         record_deleted = mongo.db.users.delete_one({"_id": ObjectId(user_id)})
 
         # Prepare the response
