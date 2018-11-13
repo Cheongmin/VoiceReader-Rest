@@ -15,7 +15,7 @@ class JSONEncoder(json.JSONEncoder):
 
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = 'mongodb://localhost:27017/VoiceReader'
+app.config["MONGO_URI"] = 'mongodb://db:27017/VoiceReader'
 app.json_encoder = JSONEncoder
 
 app.register_blueprint(get_user_api(app), url_prefix='/api/v1/users')
