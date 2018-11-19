@@ -22,9 +22,12 @@ def get_question_api(app):
 @_question_api.route('', methods=['GET'])
 def fetch_all():
     try:
+        offset = request.args.get("offset", 0)
+        size = request.args.get("size", 3)
         result = []
 
-        records_fetched = mongo.db.questions.find().sort("created_date", -1).limit(3)
+        records_fetched = mongo.db.questions.find()\
+            .sort("created_date", -1).skip(int(offset)).limit(int(size))
 
         for record in records_fetched:
             result.append(record)
