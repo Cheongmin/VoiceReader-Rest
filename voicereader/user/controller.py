@@ -33,6 +33,25 @@ def fetch_by_id(user_id):
         return "", 500
 
 
+@_user_api.route('')
+def fetch_user_id_by_fcm_uid():
+    fcm_uid = request.args.get('fcm_uid')
+
+    if fcm_uid is None:
+        return '', 400
+
+    try:
+        records_fetched = mongo.db.users.find_one({"fcm_uid": fcm_uid})
+
+        if records_fetched is not None:
+            return str(records_fetched['_id'])
+        else:
+            return '', 404
+    except Exception as ex:
+        print(ex)
+        return '', 500
+
+
 @_user_api.route('/', methods=['POST'])
 def add():
     """ Function to create new user. """
