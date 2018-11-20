@@ -4,6 +4,8 @@ import datetime
 import time
 from flask import Blueprint, request, jsonify
 from flask_pymongo import PyMongo
+from pymongo import TEXT
+from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 from firebase_admin import auth
 from binascii import Error
@@ -14,6 +16,7 @@ mongo = PyMongo()
 
 def get_user_api(app):
     mongo.init_app(app)
+    mongo.db.users.create_index([('fcm_uid', TEXT)], unique=True)
     return _user_api
 
 
@@ -81,10 +84,8 @@ def add():
         return str(ex), 401
     except ValueError as ex:
         return str(ex), 401
-    except Exception as ex:
-        # Error while trying to create the resource
-        # Add message for debugging purpose
-        return str(ex), 500
+    except DuplicateKeyError as ex:
+        return str(ex), 409
 
 
 @_user_api.route('/<user_id>/photo', methods=['POST'])
