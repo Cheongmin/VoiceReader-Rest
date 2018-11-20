@@ -6,6 +6,7 @@ chardet==3.0.4
 Click==7.0
 firebase-admin==2.13.0
 Flask==1.0.2
+Flask-JWT-Extended==3.13.1
 Flask-PyMongo==2.2.0
 Flask-SQLAlchemy==2.3.2
 google-api-core==1.5.2
@@ -24,6 +25,7 @@ msgpack==0.5.6
 protobuf==3.6.1
 pyasn1==0.4.4
 pyasn1-modules==0.2.2
+PyJWT==1.6.4
 pymongo==3.7.2
 python-dateutil==2.7.5
 pytz==2018.7
