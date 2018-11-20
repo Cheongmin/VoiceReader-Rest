@@ -5,6 +5,8 @@ import time
 from flask import Blueprint, request, jsonify
 from flask_pymongo import PyMongo
 from bson import ObjectId
+from firebase_admin import auth
+from binascii import Error
 
 _user_api = Blueprint('users', __name__)
 mongo = PyMongo()
@@ -33,7 +35,7 @@ def fetch_by_id(user_id):
         return "", 500
 
 
-@_user_api.route('')
+@_user_api.route('', methods=['GET'])
 def fetch_user_id_by_fcm_uid():
     fcm_uid = request.args.get('fcm_uid')
 
@@ -52,10 +54,13 @@ def fetch_user_id_by_fcm_uid():
         return '', 500
 
 
-@_user_api.route('/', methods=['POST'])
+@_user_api.route('', methods=['POST'])
 def add():
     """ Function to create new user. """
+    id_token = request.headers['Authorization']
+
     try:
+        decode_token = auth.verify_id_token(id_token)
         # Create new user
         try:
             body = ast.literal_eval(json.dumps(request.get_json()))
@@ -65,16 +70,21 @@ def add():
             return ex, 400
 
         body['_id'] = ObjectId()
+        body['email'] = decode_token['email']
+        body['fcm_uid'] = decode_token['sub']
         body["created_date"] = time.mktime(datetime.datetime.utcnow().timetuple())
 
         mongo.db.users.insert(body)
 
         return jsonify(body), 201
+    except Error as ex:
+        return str(ex), 401
+    except ValueError as ex:
+        return str(ex), 401
     except Exception as ex:
         # Error while trying to create the resource
         # Add message for debugging purpose
-        print(ex)
-        return "", 500
+        return str(ex), 500
 
 
 @_user_api.route('/<user_id>/photo', methods=['POST'])
