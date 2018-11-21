@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, \
+    jwt_refresh_token_required, get_jwt_identity
 from firebase_admin import auth, initialize_app, credentials
 from voicereader.constant import action_result
 from voicereader.constant import msg_json, MSG_NOT_FOUND_ELEMENT
@@ -34,12 +35,9 @@ def get_access_token():
         elif response.status_code != 200:
             return action_result.internal_server_error(response.text)
 
-        access_token = create_access_token(identity=response.text)
-        refresh_token = create_refresh_token(identity=response.text)
-
         return action_result.ok(jsonify({
-            'access_token': access_token,
-            'refresh_token': refresh_token
+            'access_token': create_access_token(identity=response.text),
+            'refresh_token': create_refresh_token(identity=response.text)
         }))
     except Error as ex:
         return action_result.unauthorized(msg_json(str(ex)))
@@ -47,3 +45,12 @@ def get_access_token():
         return action_result.unauthorized(msg_json(str(ex)))
     except Exception as ex:
         return action_result.unauthorized(msg_json(str(ex)))
+
+
+@_auth_api.route('token', methods=['POST'])
+@jwt_refresh_token_required
+def refresh_access_token():
+    return action_result.ok(jsonify({
+        'access_token': create_access_token(identity=get_jwt_identity()),
+        'refresh_token': create_refresh_token(identity=get_jwt_identity())
+    }))
