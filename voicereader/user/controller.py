@@ -90,6 +90,8 @@ def add():
         return action_result.unauthorized(msg_json(str(ex)))
     except ValueError as ex:
         return action_result.unauthorized(msg_json(str(ex)))
+    except TypeError as ex:
+        return action_result.unauthorized(msg_json(str(ex)))
     except DuplicateKeyError as ex:
         return action_result.conflict(msg_json(str(ex)))
 
@@ -148,9 +150,7 @@ def remove(user_id):
         if record_deleted.deleted_count > 0:
             # We return 204 No Content to imply resource updated successfully without returning
             # the deleted entity.
-            return action_result.no_content({
-                "user_id": user_id
-            })
+            return action_result.no_content()
         else:
             # Entity not found, perhaps already deleted, return 404
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))

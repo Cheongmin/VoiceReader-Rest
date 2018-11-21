@@ -6,8 +6,8 @@ def created(res):
     return res, 201
 
 
-def no_content(res):
-    return res, 204
+def no_content():
+    return '', 204
 
 
 def bad_request(res):
