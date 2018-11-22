@@ -5,3 +5,5 @@ upload/
 
 *.pyc
 firebase-adminsdk.json
+
+.coverage
