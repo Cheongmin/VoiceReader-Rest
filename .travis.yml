@@ -6,6 +6,7 @@ sudo: true
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install -e .
 # command to run tests
 script:
   - pytest
@@ -14,6 +15,7 @@ branches:
     only:
         - dev
         - master
+        - issue/22c5c19
 
 notifications:
   slack:
