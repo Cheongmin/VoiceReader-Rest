@@ -5,7 +5,7 @@ services:
     build: .
     command: python -u run.py
     ports:
-      - "5000:5000"
+      - "5000"
     volumes:
       - .:/app
     links:
@@ -16,5 +16,14 @@ services:
       - data-volume:/data/db
     ports:
       - "27017:27017"
+  nginx:
+    restart: always
+    image: nginx:1.13.5
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
 volumes:
   data-volume:
