@@ -44,9 +44,7 @@ def fetch_all(question_id):
 @_answer_api.route('/<answer_id>', methods=['GET'])
 @jwt_required
 def fetch_by_id(question_id, answer_id):
-    """ Function to fetch the answer by id. """
     try:
-        # Fetch all the record(s)
         records_fetched = mongo.db.questions.find_one({
             "$and": [{"_id": ObjectId(question_id)},
                      {"answers._id": ObjectId(answer_id)}]}, {"answers.$"})
@@ -56,8 +54,6 @@ def fetch_by_id(question_id, answer_id):
 
         return action_result.ok(jsonify(records_fetched['answers'][0]))
     except Exception as ex:
-        # Error while trying to fetch the resource
-        # Add message for debugging purpose
         return action_result.internal_server_error(msg_json(str(ex)))
 
 
@@ -65,12 +61,9 @@ def fetch_by_id(question_id, answer_id):
 @jwt_required
 def add(question_id):
     try:
-        # Create new user
         try:
             body = ast.literal_eval(json.dumps(request.get_json()))
         except Exception as ex:
-            # Bad request as request body is not available
-            # Add message for debugging purpose
             return action_result.bad_request(msg_json(str(ex)))
 
         body['_id'] = ObjectId()
@@ -81,17 +74,11 @@ def add(question_id):
         records_updated = mongo.db.questions.update_one({"_id": ObjectId(question_id)},
                                                         {"$push": {"answers": body}})
 
-        # Check if resource is updated
         if records_updated.modified_count > 0:
-            # Prepare the response as resource is updated successfully
             return action_result.created(jsonify(body))
         else:
-            # Bad request as the resource is not available to update
-            # Add message for debugging purpose
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
     except Exception as ex:
-        # Error while trying to create the resource
-        # Add message for debugging purpose
         return action_result.internal_server_error(msg_json(str(ex)))
 
 
@@ -101,18 +88,12 @@ def remove(question_id, answer_id):
     try:
         query = {"$and": [{"_id": ObjectId(answer_id)}, {"writer_id": ObjectId(get_jwt_identity())}]}
 
-        # Delete the user matched
         records_updated = mongo.db.questions.update_one({"_id": ObjectId(question_id)},
                                                         {"$pull": {"answers": query}})
 
-        # Check if resource is updated
         if records_updated.modified_count > 0:
-            # Prepare the response as resource is updated successfully
             return action_result.no_content()
         else:
-            # Bad request as the resource is not available to update
-            # Add message for debugging purpose
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
     except Exception as ex:
-        # Something went wrong server side, so return Internal Server Error.
         return action_result.internal_server_error(msg_json(str(ex)))
