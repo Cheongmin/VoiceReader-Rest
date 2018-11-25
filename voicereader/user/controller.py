@@ -2,12 +2,14 @@ import json
 import ast
 import datetime
 import time
+import os
 
 from flask import Blueprint, request, jsonify
 from flask_pymongo import PyMongo
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from voicereader.constant import action_result
-from voicereader.constant import msg_json, MSG_NOT_EQUAL_IDENTITY, MSG_NOT_FOUND_ELEMENT
+from voicereader.constant import msg_json, msg_not_contain_file, \
+    MSG_NOT_EQUAL_IDENTITY, MSG_NOT_FOUND_ELEMENT
 
 from pymongo import TEXT
 from pymongo.errors import DuplicateKeyError
@@ -19,9 +21,17 @@ _user_api = Blueprint('users', __name__)
 mongo = PyMongo()
 
 
+PHOTO_KEY = 'photo'
+PHOTO_UPLOAD_FOLDER = 'upload/user/'
+
+
 def get_user_api(app):
     mongo.init_app(app)
     mongo.db.users.create_index([('fcm_uid', TEXT)], unique=True)
+
+    if not os.path.exists(PHOTO_UPLOAD_FOLDER):
+        os.makedirs(PHOTO_UPLOAD_FOLDER)
+
     return _user_api
 
 
@@ -99,7 +109,35 @@ def add():
 @_user_api.route('/<user_id>/photo', methods=['POST'])
 @jwt_required
 def upload_photo(user_id):
-    pass
+    if get_jwt_identity() != user_id:
+        return action_result.bad_request(msg_json(MSG_NOT_EQUAL_IDENTITY))
+
+    try:
+        if PHOTO_KEY not in request.files:
+            return action_result.bad_request(msg_not_contain_file(PHOTO_KEY))
+
+        photo_file = request.files[PHOTO_KEY]
+        extension = os.path.splitext(photo_file.filename)[1]
+        file_name = user_id + extension
+
+        photo_file.save(os.path.join(PHOTO_UPLOAD_FOLDER, file_name))
+
+        photo_url = os.path.join(request.url, 'photo', file_name)
+        query = {"$set": {
+            "photo_url": photo_url
+        }}
+
+        record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, query)
+        if record_updated.modified_count <= 0:
+            return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        return action_result.ok(jsonify({
+            "photo_url": photo_url
+        }))
+    except Exception as ex:
+        # Error while trying to create the resource
+        # Add message for debugging purpose
+        return action_result.internal_server_error(msg_json(str(ex)))
 
 
 @_user_api.route('/<user_id>', methods=['PUT'])
