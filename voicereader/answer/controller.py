@@ -74,10 +74,10 @@ def add(question_id):
         records_updated = mongo.db.questions.update_one({"_id": ObjectId(question_id)},
                                                         {"$push": {"answers": body}})
 
-        if records_updated.modified_count > 0:
-            return action_result.created(jsonify(body))
-        else:
+        if records_updated.modified_count <= 0:
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        return action_result.created(jsonify(body))
     except Exception as ex:
         return action_result.internal_server_error(msg_json(str(ex)))
 
@@ -91,9 +91,9 @@ def remove(question_id, answer_id):
         records_updated = mongo.db.questions.update_one({"_id": ObjectId(question_id)},
                                                         {"$pull": {"answers": query}})
 
-        if records_updated.modified_count > 0:
-            return action_result.no_content()
-        else:
+        if records_updated.modified_count <= 0:
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        return action_result.no_content()
     except Exception as ex:
         return action_result.internal_server_error(msg_json(str(ex)))

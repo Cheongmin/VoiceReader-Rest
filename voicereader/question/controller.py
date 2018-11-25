@@ -109,9 +109,9 @@ def remove(question_id):
         record_deleted = mongo.db.questions.delete_one({"$and": [{"_id": ObjectId(question_id)},
                                                                  {"writer_id": ObjectId(get_jwt_identity())}]})
 
-        if record_deleted.deleted_count > 0:
-            return action_result.no_content()
-        else:
+        if record_deleted.deleted_count <= 0:
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        return action_result.no_content()
     except Exception as ex:
         return action_result.internal_server_error(msg_json(str(ex)))

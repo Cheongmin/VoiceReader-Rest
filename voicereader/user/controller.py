@@ -43,10 +43,10 @@ def fetch_by_id(user_id):
     try:
         records_fetched = mongo.db.users.find_one({"_id": ObjectId(user_id)})
 
-        if records_fetched is not None:
-            return action_result.ok(jsonify(records_fetched))
-        else:
+        if records_fetched is None:
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        return action_result.ok(jsonify(records_fetched))
     except Exception as ex:
         return action_result.internal_server_error(msg_json(str(ex)))
 
@@ -173,9 +173,9 @@ def remove(user_id):
     try:
         record_deleted = mongo.db.users.delete_one({"_id": ObjectId(user_id)})
 
-        if record_deleted.deleted_count > 0:
-            return action_result.no_content()
-        else:
+        if record_deleted.deleted_count <= 0:
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        return action_result.no_content()
     except Exception as ex:
         return action_result.internal_server_error(msg_json(str(ex)))
