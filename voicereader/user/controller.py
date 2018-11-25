@@ -95,6 +95,11 @@ def add():
         body['fcm_uid'] = decode_token['sub']
         body["created_date"] = time.mktime(datetime.datetime.utcnow().timetuple())
 
+        if 'picture' in decode_token:
+            body['picture'] = decode_token['picture']
+        else:
+            body['picture'] = ''
+
         mongo.db.users.insert(body)
 
         return action_result.created(jsonify(body))
@@ -126,13 +131,15 @@ def upload_photo(user_id):
 
         photo_url = os.path.join(request.url, file_name)
         query = {"$set": {
-            "photo_url": photo_url
+            "picture": photo_url
         }}
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, query)
+        if record_updated.matched_count == 0:
+            return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
 
         return action_result.ok(jsonify({
-            "photo_url": photo_url
+            "picture": photo_url
         }))
     except Exception as ex:
         # Error while trying to create the resource
@@ -157,16 +164,11 @@ def update(user_id):
             return action_result.bad_request(msg_json(str(ex)))
 
         # Updating the user
-        records_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, body)
-
-        # Check if resource is updated
-        if records_updated.modified_count > 0:
-            # Prepare the response as resource is updated successfully
-            return action_result.ok(jsonify(body))
-        else:
-            # Bad request as the resource is not available to update
-            # Add message for debugging purpose
+        record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, body)
+        if record_updated.matched_count == 0:
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        return action_result.ok(jsonify(body["$set"]))
     except Exception as ex:
         # Error while trying to update the resource
         # Add message for debugging purpose
