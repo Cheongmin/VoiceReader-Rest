@@ -15,12 +15,16 @@ from voicereader.constant import MSG_NOT_FOUND_ELEMENT, MSG_NOT_CONTAIN_SOUND
 _question_api = Blueprint('questions', __name__)
 mongo = PyMongo()
 
-UPLOAD_FOLDER = 'upload/sound/'
+SOUND_UPLOAD_FOLDER = 'upload/sound/'
 ALLOWED_EXTENSIONS = set([''])
 
 
 def get_question_api(app):
     mongo.init_app(app)
+
+    if not os.path.exists(SOUND_UPLOAD_FOLDER):
+        os.makedirs(SOUND_UPLOAD_FOLDER)
+
     return _question_api
 
 
@@ -63,7 +67,7 @@ def fetch_by_id(question_id):
 @_question_api.route('/sound/<path:filename>', methods=['GET', 'POST'])
 @jwt_required
 def fetch_sound_file(filename):
-    return send_from_directory(os.path.abspath(UPLOAD_FOLDER), filename, as_attachment=True)
+    return send_from_directory(os.path.abspath(SOUND_UPLOAD_FOLDER), filename, as_attachment=True)
 
 
 @_question_api.route('', methods=['POST'])
@@ -93,7 +97,7 @@ def add():
 
         body["sound_url"] = os.path.join(request.url, 'sound', file_name)
 
-        sound_file.save(os.path.join(UPLOAD_FOLDER, file_name))
+        sound_file.save(os.path.join(SOUND_UPLOAD_FOLDER, file_name))
 
         record_created = mongo.db.questions.insert(body)
 
