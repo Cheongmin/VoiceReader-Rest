@@ -26,5 +26,9 @@ def conflict(res):
     return res, 409
 
 
+def unsupported_media_type(res):
+    return res, 415
+
+
 def internal_server_error(res):
     return res, 500

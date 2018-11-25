@@ -8,8 +8,9 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from flask_pymongo import PyMongo
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from voicereader.constant import action_result
-from voicereader.constant import msg_json, msg_not_contain_file, \
+from voicereader.constant import msg_json, msg_not_contain_file, msg_invalid_file, \
     MSG_NOT_EQUAL_IDENTITY, MSG_NOT_FOUND_ELEMENT
+from voicereader.constant.media import allowed_file
 
 from pymongo import TEXT
 from pymongo.errors import DuplicateKeyError
@@ -23,6 +24,7 @@ mongo = PyMongo()
 
 PHOTO_KEY = 'photo'
 PHOTO_UPLOAD_FOLDER = 'upload/user/'
+PHOTO_ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 
 def get_user_api(app):
@@ -120,7 +122,8 @@ def upload_photo(user_id):
         extension = os.path.splitext(photo_file.filename)[1]
         file_name = user_id + extension
 
-        photo_file.save(os.path.join(PHOTO_UPLOAD_FOLDER, file_name))
+        if not allowed_file(photo_file.filename, PHOTO_ALLOWED_EXTENSIONS):
+            return action_result.unsupported_media_type(msg_invalid_file(extension))
 
         photo_url = os.path.join(request.url, file_name)
         query = {"$set": {
@@ -130,6 +133,8 @@ def upload_photo(user_id):
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, query)
         if record_updated.matched_count == 0:
             return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
+
+        photo_file.save(os.path.join(PHOTO_UPLOAD_FOLDER, file_name))
 
         return action_result.ok(jsonify({
             "picture": photo_url
