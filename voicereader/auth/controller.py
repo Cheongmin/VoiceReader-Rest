@@ -18,6 +18,16 @@ def get_auth_api():
     return _auth_api
 
 
+@_auth_api.route('token/debug', methods=['GET'])
+def get_debug_token():
+    user_id = request.args['user_id']
+
+    return action_result.ok(jsonify({
+            'access_token': create_access_token(identity=user_id),
+            'refresh_token': create_refresh_token(identity=user_id)
+        }))
+
+
 @_auth_api.route('token', methods=['GET'])
 def get_access_token():
     id_token = request.headers['Authorization']
