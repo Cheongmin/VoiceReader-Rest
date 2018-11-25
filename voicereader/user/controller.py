@@ -4,7 +4,7 @@ import datetime
 import time
 import os
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from flask_pymongo import PyMongo
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from voicereader.constant import action_result
@@ -73,6 +73,11 @@ def fetch_user_id_by_fcm_uid():
         return action_result.internal_server_error(msg_json(str(ex)))
 
 
+@_user_api.route('/<user_id>/photo/<path:file_name>', methods=['GET'])
+def fetch_user_photo(user_id, file_name):
+    return send_from_directory(os.path.abspath(PHOTO_UPLOAD_FOLDER), file_name, as_attachment=True)
+
+
 @_user_api.route('', methods=['POST'])
 def add():
     """ Function to create new user. """
@@ -122,14 +127,12 @@ def upload_photo(user_id):
 
         photo_file.save(os.path.join(PHOTO_UPLOAD_FOLDER, file_name))
 
-        photo_url = os.path.join(request.url, 'photo', file_name)
+        photo_url = os.path.join(request.url, file_name)
         query = {"$set": {
             "photo_url": photo_url
         }}
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, query)
-        if record_updated.modified_count <= 0:
-            return action_result.not_found(msg_json(MSG_NOT_FOUND_ELEMENT))
 
         return action_result.ok(jsonify({
             "photo_url": photo_url
