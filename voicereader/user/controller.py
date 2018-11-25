@@ -39,9 +39,6 @@ def get_user_api(app):
 @jwt_required
 def fetch_by_id(user_id):
     """ Function to fetch the users. """
-    if get_jwt_identity() != user_id:
-        return action_result.bad_request(msg_json(MSG_NOT_EQUAL_IDENTITY))
-
     try:
         # Fetch all the record(s)
         records_fetched = mongo.db.users.find_one({"_id": ObjectId(user_id)})
