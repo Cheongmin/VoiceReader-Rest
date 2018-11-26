@@ -2,28 +2,27 @@ language: python
 python: 3.7
 dist: xenial
 sudo: true
-
-# command to install dependencies
 install:
-  - pip install -r requirements.txt
-# command to run tests
+- pip install -r requirements.txt
 script:
-  - pytest
-
+- pytest
 branches:
-    only:
-        - dev
-        - master
-
+  only:
+  - dev
+  - master
 deploy:
   provider: script
-  # specify the deployment script
-  script: bash scripts/deploy.sh
-  # specify to deploy with code change a given branch
+  script: bash scripts/dockerhub-deploy.sh
+  skip_cleanup: true
   on:
     branch: dev
-
+    tags: true
 notifications:
   slack:
     rooms:
-      - soundright:S3MSovZcyt8SLApWT8wmSYW5#development
+    - soundright:S3MSovZcyt8SLApWT8wmSYW5#development
+
+env:
+  global:
+    - DOCKER_USER=gyuhwankim
+    - secure: N9aQX4i5OmYdgi/jqY/xXouVvLfloaLrUr69//PKk0QbIcbbhA7Cq4wv3T1OLOFAyaHSPb7t5AZ6nK0dY2IvqO8iEznrVEA+SNqABd5/yd6aE0W1hz2qETn0WiV5k+YCUGMRT5iUgoAfOhG2eqv8LfwbOG2OqvztotI7CJ12jXBPfEvHwWyvhd7Tp/O4ofHRWlgXogdzFftemvPBUpmbHn3dKIccUZug9hUnNqGbjQrXWHK1SJmvcYkvttrMGsDuF0q1Lh51KE5EaaizSmiJITpYnPZIEQY/H5waUXcq0HyrL35gu8rFCQTIZhTawMKeyTLA+UIbWGhjEJ2Fq9gn2/IlZX/hchyR/FbH+ppf6it9iMLzY2e1LAvPjITRIgBLBCsbumwdxm1LnJPLwLA6nZVcoKDvZ8WBNjjHwh8z1YYSKhLtv8vK93aj3KOZKVLN08c+1pap+gP1DdG2n6F0+GAsoaH9LZlzTLRlMlWyWdDvcyyRKd4fLxNrdC/hMDs9girEM87xLHKTK+Lio1G9Cvbt54Qd4w0ckswMIb2znvuF//E52z4Gom6zC9+HE9kkUqc8rokWclThaMxur+IMUgXLhYMIlMfnlaTINrOsdzBd6NFHQDJ98cFYbh9uhhZmuzRxUpODOpBx8rfmKTMUNv9IJKgsUA/5lXqxgMnQ0yA=
