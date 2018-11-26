@@ -3,19 +3,40 @@ version: "3.0"
 services:
   api:
     build: .
-    command: python -u run.py
+    deploy:
+      replicas: 5
+      restart_policy:
+        condition: on-failure
     ports:
       - "5000"
     volumes:
       - .:/app
     links:
       - mongodb
+    networks:
+      - apinet
+#  visualizer:
+#    image: dockersamples/visualizer:stable
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - "/var/run/docker.sock:/var/run/docker.sock"
+#    deploy:
+#      placement:
+#        constraints: [node.role == manager]
+#    networks:
+#      - apinet
   mongodb:
     image: mongo:4.0.4
     volumes:
       - data-volume:/data/db
     ports:
       - "27017:27017"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - apinet
   nginx:
     restart: always
     image: nginx:1.13.5
@@ -25,5 +46,14 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - api
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - apinet
+
 volumes:
   data-volume:
+
+networks:
+  apinet:
