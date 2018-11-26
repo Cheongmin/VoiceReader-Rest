@@ -2,21 +2,25 @@ language: python
 python: 3.7
 dist: xenial
 sudo: true
+
 install:
 - pip install -r requirements.txt
+
 script:
 - pytest
+
 branches:
   only:
   - dev
   - master
+
 deploy:
   provider: script
   script: bash scripts/dockerhub-deploy.sh
   skip_cleanup: true
   on:
     branch: dev
-    tags: true
+
 notifications:
   slack:
     rooms:
