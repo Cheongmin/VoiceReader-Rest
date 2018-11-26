@@ -4,15 +4,19 @@ dist: xenial
 sudo: true
 
 install:
-- pip install -r requirements.txt
+  - pip install -r requirements.txt
+
+before_script:
+  - openssl aes-256-cbc -K $encrypted_98174358e853_key -iv $encrypted_98174358e853_iv
+    -in firebase-adminsdk.json.enc -out firebase-adminsdk.json -d
 
 script:
-- pytest
+  - pytest
 
 branches:
   only:
-  - dev
-  - master
+    - dev
+    - master
 
 deploy:
   provider: script
@@ -24,7 +28,7 @@ deploy:
 notifications:
   slack:
     rooms:
-    - soundright:S3MSovZcyt8SLApWT8wmSYW5#development
+      - soundright:S3MSovZcyt8SLApWT8wmSYW5#development
 
 env:
   global:
