@@ -15,6 +15,14 @@ branches:
         - dev
         - master
 
+deploy:
+  provider: script
+  # specify the deployment script
+  script: bash scripts/deploy.sh
+  # specify to deploy with code change a given branch
+  on:
+    branch: dev
+
 notifications:
   slack:
     rooms:
