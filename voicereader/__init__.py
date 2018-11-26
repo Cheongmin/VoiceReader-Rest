@@ -25,6 +25,10 @@ def create_app():
     initialize_extensions(app)
     register_blueprints(app)
 
+    @app.route('/api/version')
+    def get_version():
+        return 'VoiceReader-Api version 0.1'
+
     return app
 
 
