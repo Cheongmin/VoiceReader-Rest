@@ -23,17 +23,29 @@ def create_app():
     app.json_encoder = JSONEncoder
 
     initialize_extensions(app)
+    initialize_dev_environment(app)
     register_blueprints(app)
 
     @app.route('/api/version')
     def get_version():
         return 'VoiceReader-Api version 0.1'
 
+    @app.route('/api/info/env')
+    def get_info():
+        return app.config['ENV']
+
     return app
 
 
 def initialize_extensions(app):
     jwt.init_app(app)
+
+
+def initialize_dev_environment(app):
+    if app.config['ENV'] != 'development':
+        return
+
+    app.config['MONGO_URI'] = 'mongodb://localhost:27017/VoiceReader'
 
 
 def register_blueprints(app):
