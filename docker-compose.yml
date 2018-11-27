@@ -13,7 +13,7 @@ services:
     ports:
       - "5000"
     volumes:
-      - app-volume:/app
+      - app-resource-volume:/app/upload
 
   mongodb:
     image: mongo:4.0.4
@@ -23,5 +23,5 @@ services:
       - "27017:27017"
 
 volumes:
-  app-volume:
+  app-resource-volume:
   data-volume:
