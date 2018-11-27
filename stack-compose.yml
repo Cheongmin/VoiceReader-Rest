@@ -10,25 +10,17 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-#    links:
-#      - api
-#    networks:
-#      - apinet
 
   api:
     image: gyuhwankim/voicereader-rest:latest
     deploy:
-#      replicas: 2
+      replicas: 2
       restart_policy:
         condition: on-failure
     ports:
       - "5000"
     volumes:
-      - app-volume:/app
-#    links:
-#      - mongodb
-#    networks:
-#      - apinet
+      - app-resource-volume:/app/upload
 
   visualizer:
     image: dockersamples/visualizer:stable
@@ -39,8 +31,6 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-#    networks:
-#      - apinet
 
   mongodb:
     image: mongo:4.0.4
@@ -51,12 +41,7 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
-#    networks:
-#      - apinet
 
 volumes:
-  app-volume:
+  app-resource-volume:
   data-volume:
-
-#networks:
-#  apinet:
