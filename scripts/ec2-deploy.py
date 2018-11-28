@@ -17,7 +17,6 @@ def deploy():
 
     put('nginx.conf', src)
     put('stack-compose.yml', src)
-    put('scripts/update-secrets.sh', src)
     put('scripts/swarm-deploy.sh', src)
 
     with cd(src):
