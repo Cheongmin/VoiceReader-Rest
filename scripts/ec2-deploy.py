@@ -5,6 +5,7 @@ from fabric.context_managers import cd
 
 env.user = os.getenv('EC2_USER')
 env.hosts = os.getenv('EC2_HOST')
+env.key_filename = 'voicereader-vm.pem'
 
 src = 'voicereader-rest/'
 

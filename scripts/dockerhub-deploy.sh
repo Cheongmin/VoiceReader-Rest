@@ -5,6 +5,3 @@ docker tag gyuhwankim/voicereader-rest:0.0.1 gyuhwankim/voicereader-rest:latest
 
 docker push gyuhwankim/voicereader-rest:0.0.1
 docker push gyuhwankim/voicereader-rest:latest
-
-eval "$(ssh-agent -s)"
-ssh-add voicereader-vm.pem
