@@ -10,9 +10,6 @@ src = 'voicereader-rest/'
 
 
 def deploy():
-    local('eval "$(ssh-agent -s)"')
-    local('ssh-add voicereader-vm.pem')
-
     run('mkdir -p {}'.format(src))
 
     put('nginx.conf', src)
