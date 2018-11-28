@@ -10,3 +10,4 @@ firebase-adminsdk.json
 voicereader-vm.pem
 config.development.json
 config.production.json
+secrets.tar
