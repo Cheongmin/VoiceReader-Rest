@@ -18,6 +18,7 @@ deploy:
   provider: script
   script:
     bash scripts/dockerhub-deploy.sh;
+    eval "$(ssh-agent -s)";
     fab -f scripts/ec2-deploy.py deploy
   skip_cleanup: true
   on:
