@@ -6,12 +6,19 @@ from fabric.context_managers import cd
 env.user = os.getenv('EC2_USER')
 env.hosts = os.getenv('EC2_HOST')
 
+src = 'voicereader-rest/'
+
 
 def deploy():
     local('eval $(ssh-agent)')
     local('ssh-add voicereader-vm.pem')
 
-    # run('mkdir VoiceReader-Rest-Production')
+    run('mkdir -p {}'.format(src))
 
-    sudo('docker service ls')
-    pass
+    put('nginx.conf', src)
+    put('stack-compose.yml', src)
+    put('scripts/update-secrets.sh', src)
+    put('scripts/swarm-deploy.sh', src)
+
+    with cd(src):
+        run('bash swarm-deploy.sh')
