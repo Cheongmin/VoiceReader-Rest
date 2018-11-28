@@ -1,5 +1,6 @@
 import json
 import datetime
+import os
 
 from bson import ObjectId
 from flask import Flask
@@ -19,20 +20,19 @@ jwt = JWTManager()
 def create_app():
     app = Flask(__name__)
     app.config.from_json("../config.json")
+    app.config['VOICEREADER_API_VERSION'] = 'develop version'
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
     app.json_encoder = JSONEncoder
 
     initialize_extensions(app)
-    initialize_dev_environment(app)
+
+    if app.config['ENV'] == 'development':
+        initialize_development_env(app)
+    elif app.config['ENV'] == 'production':
+        initialize_production_env(app)
+
     register_blueprints(app)
-
-    @app.route('/api/version')
-    def get_version():
-        return 'VoiceReader-Api version 0.1'
-
-    @app.route('/api/info/env')
-    def get_info():
-        return app.config['ENV']
+    register_server_info_handlers(app)
 
     return app
 
@@ -41,11 +41,12 @@ def initialize_extensions(app):
     jwt.init_app(app)
 
 
-def initialize_dev_environment(app):
-    if app.config['ENV'] != 'development':
-        return
-
+def initialize_development_env(app):
     app.config['MONGO_URI'] = 'mongodb://localhost:27017/VoiceReader'
+
+
+def initialize_production_env(app):
+    app.config['VOICEREADER_API_VERSION'] = os.getenv('VOICEREADER_API_VERSION')
 
 
 def register_blueprints(app):
@@ -58,3 +59,13 @@ def register_blueprints(app):
     app.register_blueprint(get_question_api(app), url_prefix='/api/v1/questions')
     app.register_blueprint(get_answer_api(app), url_prefix='/api/v1/questions/<question_id>/answers')
     app.register_blueprint(get_auth_api(), url_prefix='/api/v1')
+
+
+def register_server_info_handlers(app):
+    @app.route('/api/info/version')
+    def get_version():
+        return 'develop version'
+
+    @app.route('/api/info/env')
+    def get_info():
+        return app.config['ENV']
