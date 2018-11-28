@@ -37,7 +37,7 @@ services:
     volumes:
       - data-volume:/data/db
     ports:
-      - "27017:27017"
+      - "27017"
     deploy:
       placement:
         constraints: [node.role == manager]
