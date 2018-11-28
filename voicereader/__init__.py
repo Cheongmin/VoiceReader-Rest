@@ -64,7 +64,7 @@ def register_blueprints(app):
 def register_server_info_handlers(app):
     @app.route('/api/info/version')
     def get_version():
-        return 'develop version'
+        return 'develop version3'
 
     @app.route('/api/info/env')
     def get_info():

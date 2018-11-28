@@ -10,7 +10,7 @@ src = 'voicereader-rest/'
 
 
 def deploy():
-    local('eval $(ssh-agent)')
+    local('sudo ssh-agent bash')
     local('ssh-add voicereader-vm.pem')
 
     run('mkdir -p {}'.format(src))
