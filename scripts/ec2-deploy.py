@@ -8,7 +8,7 @@ env.hosts = os.getenv('EC2_HOST')
 
 
 def deploy():
-    local('eval "$(ssh-agent -s)"')
+    local('eval $(ssh-agent)')
     local('ssh-add voicereader-vm.pem')
 
     # run('mkdir VoiceReader-Rest-Production')
