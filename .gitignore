@@ -4,6 +4,9 @@ __pycache__/
 upload/
 
 *.pyc
-firebase-adminsdk.json
-
 .coverage
+
+firebase-adminsdk.json
+voicereader-vm.pem
+config.development.json
+config.production.json
