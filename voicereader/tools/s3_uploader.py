@@ -1,7 +1,5 @@
-import io
 import boto3
-
-from flask import make_response, send_file
+from flask import make_response
 
 
 class S3Uploader:
