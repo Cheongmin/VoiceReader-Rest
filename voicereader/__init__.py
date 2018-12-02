@@ -19,7 +19,8 @@ jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_json("../config.json")
+    app.config.from_json('../config.json')
+    app.config.from_json('../config.{}.json'.format(app.config['ENV']))
     app.config['VOICEREADER_API_VERSION'] = 'develop version'
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
     app.json_encoder = JSONEncoder
