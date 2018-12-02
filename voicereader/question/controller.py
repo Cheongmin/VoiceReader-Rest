@@ -4,7 +4,7 @@ import datetime
 import time
 import os
 
-from flask import Blueprint, request, jsonify, send_from_directory
+from flask import Blueprint, request, jsonify
 from flask_pymongo import PyMongo
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from bson import ObjectId
@@ -12,6 +12,7 @@ from bson import ObjectId
 from voicereader.constant import action_result, msg_json
 from voicereader.constant import MSG_NOT_FOUND_ELEMENT, MSG_NOT_CONTAIN_SOUND, msg_invalid_file
 from voicereader.constant.media import allowed_file
+from voicereader.tools.s3_uploader import S3Uploader
 
 _question_api = Blueprint('questions', __name__)
 mongo = PyMongo()
@@ -19,12 +20,12 @@ mongo = PyMongo()
 SOUND_UPLOAD_FOLDER = 'upload/sound/'
 SOUND_ALLOWED_EXTENSIONS = set(['mp3', 'm4a'])
 
+file_manager = S3Uploader('sound/')
+
 
 def get_question_api(app):
     mongo.init_app(app)
-
-    if not os.path.exists(SOUND_UPLOAD_FOLDER):
-        os.makedirs(SOUND_UPLOAD_FOLDER)
+    file_manager.init_app(app)
 
     return _question_api
 
@@ -62,9 +63,8 @@ def fetch_by_id(question_id):
 
 
 @_question_api.route('/sound/<path:filename>', methods=['GET', 'POST'])
-@jwt_required
 def fetch_sound_file(filename):
-    return send_from_directory(os.path.abspath(SOUND_UPLOAD_FOLDER), filename, as_attachment=True)
+    return file_manager.fetch_file(filename, as_attachment=True)
 
 
 @_question_api.route('', methods=['POST'])
@@ -86,14 +86,14 @@ def add():
 
         sound_file = request.files['sound']
         extension = os.path.splitext(sound_file.filename)[1]
-        file_name = str(body['_id']) + extension
+        sound_file.filename = str(body['_id']) + extension
 
         if not allowed_file(sound_file.filename, SOUND_ALLOWED_EXTENSIONS):
             return action_result.unsupported_media_type(msg_invalid_file(extension))
 
-        body["sound_url"] = os.path.join(request.url, 'sound', file_name)
+        body["sound_url"] = os.path.join(request.url, 'sound', sound_file.filename)
 
-        sound_file.save(os.path.join(SOUND_UPLOAD_FOLDER, file_name))
+        file_manager.upload_file(sound_file)
 
         mongo.db.questions.insert(body)
 
