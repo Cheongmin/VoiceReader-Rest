@@ -11,7 +11,7 @@ from voicereader.constant import action_result
 from voicereader.constant import msg_json, msg_not_contain_file, msg_invalid_file, \
     MSG_NOT_EQUAL_IDENTITY, MSG_NOT_FOUND_ELEMENT
 from voicereader.constant.media import allowed_file
-from voicereader.tools.local_uploader import LocalUploader
+from voicereader.tools.s3_uploader import S3Uploader
 
 from pymongo import TEXT
 from pymongo.errors import DuplicateKeyError
@@ -27,7 +27,8 @@ PHOTO_KEY = 'photo'
 PHOTO_UPLOAD_FOLDER = 'upload/user/'
 PHOTO_ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
-file_manager = LocalUploader(PHOTO_UPLOAD_FOLDER)
+# file_manager = LocalUploader(PHOTO_UPLOAD_FOLDER)
+file_manager = S3Uploader('user-picture/')
 
 
 def get_user_api(app):
