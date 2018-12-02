@@ -1,17 +1,9 @@
-import json
 import datetime
 import os
 
-from bson import ObjectId
 from flask import Flask
 from flask_jwt_extended import JWTManager
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, ObjectId):
-            return str(o)
-        return json.JSONEncoder.default(self, o)
+from voicereader.tools.json_encoder import JSONEncoder
 
 
 jwt = JWTManager()
