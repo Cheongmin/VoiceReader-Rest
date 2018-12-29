@@ -3,10 +3,11 @@ import os
 
 from flask import Flask
 from flask_jwt_extended import JWTManager
+from flasgger import Swagger
 from voicereader.tools.json_encoder import JSONEncoder
 
-
 jwt = JWTManager()
+swagger = Swagger()
 
 
 def create_app():
@@ -32,6 +33,7 @@ def create_app():
 
 def initialize_extensions(app):
     jwt.init_app(app)
+    swagger.init_app(app)
 
 
 def initialize_development_env(app):
@@ -57,6 +59,11 @@ def register_blueprints(app):
 def register_server_info_handlers(app):
     @app.route('/api/info/version')
     def get_version():
+        """ Get version of api server.
+        ---
+        responses:
+            200:
+                description: A list"""
         return 'develop version3'
 
     @app.route('/api/info/env')
