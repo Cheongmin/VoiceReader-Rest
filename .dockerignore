@@ -4,6 +4,6 @@ tests/
 .gitignore
 .travis.yml
 
-config.json
+
 nginx.conf
 secrets.tar.enc
