@@ -1,15 +1,34 @@
-FROM ubuntu:16.04
+#FROM python:3.7.2-alpine3.7 as base
+#
+#FROM base as builder
+#
+#RUN mkdir /install
+#WORKDIR /install
+#
+#COPY requirements.txt /requirements.txt
+#
+#RUN apk add -U --no-cache gcc build-base linux-headers \
+#    ca-certificates python3-dev libffi-dev
+#RUN pip install -r /requirements.txt
+#
+#FROM base
+#
+#COPY --from=builder /install /usr/local
+#COPY . /app
+#
+#WORKDIR /app
+#
+#CMD [ "python", "run.py" ]
+FROM alpine:3.7
 MAINTAINER Gyuhwan Kim <gyuhwan.a.kim@gmail.com>
 
-RUN apt-get update -y
-RUN apt-get install -y python-pip python-dev
-
-COPY ./requirements.txt /app/requirements.txt
-
+COPY . /app
 WORKDIR /app
 
-RUN pip install -r requirements.txt
+RUN apk add -U --no-cache gcc build-base \
+    python3-dev libffi-dev openssl-dev \
+    && pip3 install -r requirements.txt
 
-COPY . /app
+EXPOSE 5000
 
-CMD [ "python", "run.py" ]
+CMD [ "python3", "run.py" ]
