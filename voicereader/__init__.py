@@ -3,27 +3,17 @@ import os
 
 from flask import Flask
 from flask_jwt_extended import JWTManager
-from flasgger import Swagger
-from voicereader.tools.json_encoder import JSONEncoder
+from flask_pymongo import PyMongo
 
 jwt = JWTManager()
-swagger = Swagger()
+mongo = PyMongo()
 
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_json('../config.json')
-    app.config.from_json('../config.{}.json'.format(app.config['ENV']))
-    app.config['VOICEREADER_API_VERSION'] = 'develop version'
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
-    app.json_encoder = JSONEncoder
 
-    initialize_extensions(app)
-
-    if app.config['ENV'] == 'development':
-        initialize_development_env(app)
-    elif app.config['ENV'] == 'production':
-        initialize_production_env(app)
+    configure_app(app)
+    configure_service(app)
 
     register_blueprints(app)
     register_server_info_handlers(app)
@@ -31,9 +21,19 @@ def create_app():
     return app
 
 
-def initialize_extensions(app):
-    jwt.init_app(app)
-    swagger.init_app(app)
+def configure_app(app):
+    from voicereader.extensions.json_encoder import JSONEncoder
+
+    app.config['VOICEREADER_API_VERSION'] = 'develop version'
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
+    if app.config['ENV'] == 'development':
+        initialize_development_env(app)
+    elif app.config['ENV'] == 'production':
+        initialize_production_env(app)
+
+    app.config.from_json('../config.json')
+    app.config.from_json('../config.{}.json'.format(app.config['ENV']))
+    app.json_encoder = JSONEncoder
 
 
 def initialize_development_env(app):
@@ -42,6 +42,11 @@ def initialize_development_env(app):
 
 def initialize_production_env(app):
     app.config['VOICEREADER_API_VERSION'] = os.getenv('VOICEREADER_API_VERSION')
+
+
+def configure_service(app):
+    jwt.init_app(app)
+    mongo.init_app(app)
 
 
 def register_blueprints(app):
@@ -56,14 +61,15 @@ def register_blueprints(app):
     app.register_blueprint(get_auth_api(), url_prefix='/api/v1')
 
 
+def add_namespaces(api):
+    from voicereader.user.controller import api as user
+
+    api.add_namespace(user)
+
+
 def register_server_info_handlers(app):
     @app.route('/api/info/version')
     def get_version():
-        """ Get version of api server.
-        ---
-        responses:
-            200:
-                description: A list"""
         return 'develop version3'
 
     @app.route('/api/info/env')
