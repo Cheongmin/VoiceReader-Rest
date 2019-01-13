@@ -9,7 +9,7 @@ from werkzeug.exceptions import NotFound, Unauthorized
 from firebase_admin import auth, initialize_app, credentials
 
 from .schema import access_token_schema, refresh_token_schema
-from ..user.resource import get_user_id
+from ..user.controller import get_user_id
 
 credential = credentials.Certificate('firebase-adminsdk.json')
 firebase_app = initialize_app(credential)
@@ -75,7 +75,7 @@ class Token(Resource):
         })
 
     @jwt_refresh_token_required
-    @api.doc(description='fetch new AccessToken by RefreshToken')
+    @api.doc(description='Fetch new AccessToken by RefreshToken')
     @api.expect(post_parser)
     @api.response(200, 'Success', refresh_token_schema(api))
     @api.response(400, 'Failed when not include "Authorization" header')
