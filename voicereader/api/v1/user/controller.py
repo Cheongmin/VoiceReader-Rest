@@ -19,18 +19,19 @@ from ast import literal_eval
 from voicereader import mongo, file_manager
 from voicereader.extensions.media import allowed_file
 from .schema import post_user_schema, user_schema
+from .. import errors
 
 api = Namespace('User API', description='Users related operation')
 
 post_parser = api.parser()
-post_parser.add_argument('Authorization', location='headers', required=True, help='IdToken from firebase auth')
+post_parser.add_argument('Authorization', location='headers', required=True, help='ID Token from firebase auth')
 
 
 @api.route('')
 class UserList(Resource):
-    @api.doc(description='Request add new user', parser=post_parser, body=post_user_schema(api), validate=True)
-    @api.response(201, 'New user created', user_schema(api))
-    @api.response(400, 'Invalid user scheme')
+    @api.doc(description='Add new user', parser=post_parser, body=post_user_schema(api), validate=True)
+    @api.marshal_with(user_schema(api), code=201)
+    @api.response(400, 'Invalid user schema')
     @api.response(401, 'Invalid IdToken')
     @api.response(409, 'Already exists user')
     def post(self):
@@ -40,13 +41,13 @@ class UserList(Resource):
 
         try:
             decoded_token = auth.verify_id_token(id_token)
-        except ValueError as ex:
-            raise Unauthorized(str(ex))
+        except ValueError:
+            raise Unauthorized(errors.INVALID_ID_TOKEN)
 
         try:
             body = literal_eval(json.dumps(request.get_json()))
-        except ValueError as ex:
-            raise BadRequest(str(ex))
+        except ValueError:
+            raise BadRequest(errors.INVALID_PAYLOAD)
 
         body['_id'] = ObjectId()
         body['email'] = decoded_token['email']
@@ -60,10 +61,10 @@ class UserList(Resource):
 
         try:
             mongo.db.users.insert(body)
-        except DuplicateKeyError as ex:
-            raise Conflict(str(ex))
+        except DuplicateKeyError:
+            raise Conflict(errors.ALREADY_EXISTS_USER)
 
-        return jsonify(body), 201
+        return body, 201
 
 
 parser = api.parser()
@@ -75,25 +76,28 @@ parser.add_argument('Authorization', location='headers', required=True, help='Be
 @api.expect(parser)
 class User(Resource):
     @jwt_required
-    @api.doc(description='Request fetch user by userid')
+    @api.doc(description='Fetch user by user_id')
     @api.response(200, 'Success', user_schema(api))
-    @api.response(400, 'Invalid user id')
+    @api.response(400, 'Invalid user_id')
+    @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists user')
     def get(self, user_id):
         try:
             user_id = ObjectId(user_id)
         except bson.errors.InvalidId:
-            raise BadRequest("Invalid user_id")
+            raise BadRequest(errors.INVALID_USER_ID)
 
         record_fetched = mongo.db.users.find_one({"_id": ObjectId(user_id)})
         if record_fetched is None:
-            raise NotFound('not exists user')
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         return jsonify(record_fetched)
 
     @jwt_required
-    @api.doc(description='Request update user', body=user_schema(api), validate=True)
-    @api.response(200, 'Success', model=user_schema(api))
+    @api.doc(description='Update user by user_id', body=user_schema(api), validate=True)
+    @api.response(200, 'Success', user_schema(api))
+    @api.response(400, 'Invalid user schema')
+    @api.response(401, 'Invalid AccessToken')
     @api.response(403, 'Not equal user id that included token and request user id')
     @api.response(404, 'Not exists user')
     def put(self, user_id):
@@ -102,27 +106,27 @@ class User(Resource):
 
         try:
             body = literal_eval(json.dumps({"$set": request.get_json()}))
-        except ValueError as ex:
-            return BadRequest(str(ex))
+        except ValueError:
+            return BadRequest(errors.INVALID_PAYLOAD)
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, body)
         if record_updated.matched_count == 0:
-            return NotFound('Not exists user')
+            return NotFound(errors.NOT_EXISTS_DATA)
 
         return jsonify(body['$set'])
 
     @jwt_required
-    @api.doc(description='Request remove user by userid')
+    @api.doc(description='Remove user by user_id')
     @api.response(204, 'Success')
-    @api.response(403, 'Not equal user id that included token and request user id')
+    @api.response(403, 'Not equal User ID that included token and request user_id')
     @api.response(404, 'Not exists user')
     def delete(self, user_id):
         if get_jwt_identity() != user_id:
-            raise Forbidden('')
+            raise Forbidden()
 
         record_deleted = mongo.db.users.delete_one({"_id": ObjectId(user_id)})
         if record_deleted.deleted_count < 1:
-            raise NotFound('not exists user')
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         return '', 204
 
@@ -140,7 +144,7 @@ post_photo_parser.add_argument(PHOTO_KEY, type=FileStorage, location='files', re
 @api.expect(parser)
 class UserPhoto(Resource):
     @jwt_required
-    @api.doc(description='Request upload user photo')
+    @api.doc(description='Upload user photo')
     @api.expect(post_photo_parser)
     @api.response(200, 'Success')
     @api.response(403, 'Not equal user id that included token and request user id')
@@ -156,7 +160,7 @@ class UserPhoto(Resource):
         photo_file.filename = user_id + extension
 
         if not allowed_file(photo_file.filename, PHOTO_ALLOWED_EXTENSIONS):
-            return UnsupportedMediaType("Can't allowed file")
+            return UnsupportedMediaType(errors.UNSUPPORT_MEDIA_TYPE)
 
         photo_url = os.path.join(request.url, photo_file.filename)
         query = {"$set": {
@@ -165,7 +169,7 @@ class UserPhoto(Resource):
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, query)
         if record_updated.matched_count == 0:
-            return NotFound('Invalid user_id')
+            return NotFound(errors.NOT_EXISTS_DATA)
 
         file_manager.upload_file(PHOTO_PREFIX, photo_file)
 
