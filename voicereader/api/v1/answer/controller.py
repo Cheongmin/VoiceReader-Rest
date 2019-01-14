@@ -14,7 +14,8 @@ from ast import literal_eval
 
 from voicereader import mongo
 
-from .schema import answer_schema
+from .schema import answer_schema, post_answer_schema
+from .. import errors
 
 api = Namespace('Answer about Question API', description='Answers related operation')
 
@@ -25,23 +26,23 @@ common_parser.add_argument('Authorization', location='headers', required=True, h
 @api.route('/<question_id>/answers')
 @api.expect(common_parser)
 class AnswerList(Resource):
-    @api.doc(description='Request fetch answers by QuestionId')
+    @api.doc(description='Fetch answers by question_id')
     @api.marshal_list_with(answer_schema(api))
-    @api.response(400, 'Invalid question id')
-    @api.response(401, 'Unauthorized access_token')
+    @api.response(400, 'Invalid question_id')
+    @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists question')
     def get(self, question_id):
         try:
             question_id = ObjectId(question_id)
         except InvalidId:
-            raise BadRequest('Invalid question id')
+            raise BadRequest(errors.INVALID_QUESTION_ID)
 
         result = []
         records_fetched = mongo.db.questions.find_one(
             {"_id": question_id})
 
         if records_fetched is None:
-            raise NotFound('Not exists question')
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         if 'answers' in records_fetched:
             for record in records_fetched['answers']:
@@ -49,21 +50,22 @@ class AnswerList(Resource):
 
         return result
 
-    @api.doc(description='Request add new answer')
+    @api.doc(description='Add new answer', )
+    @api.expect(post_answer_schema(api), validate=True)
     @api.marshal_with(answer_schema(api), code=201)
     @api.response(400, 'Invalid question_id or request payload')
-    @api.response(401, 'Unauthorized access_token')
+    @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists question')
     def post(self, question_id):
         try:
             question_id = ObjectId(question_id)
         except InvalidId:
-            raise BadRequest('Invalid question id')
+            raise BadRequest(errors.INVALID_QUESTION_ID)
 
         try:
             body = literal_eval(json.dumps(request.get_json()))
         except ValueError:
-            raise BadRequest('Invalid answer')
+            raise BadRequest(errors.INVALID_PAYLOAD)
 
         body['_id'] = ObjectId()
         body['question_id'] = question_id
@@ -74,7 +76,7 @@ class AnswerList(Resource):
                                                         {"$push": {"answers": body}})
 
         if records_updated.modified_count <= 0:
-            raise NotFound('Not exists question')
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         return body, 201
 
@@ -83,46 +85,46 @@ class AnswerList(Resource):
 @api.expect(common_parser)
 class Answer(Resource):
     @jwt_required
-    @api.doc(description='Request fetch answer by AnswerId')
+    @api.doc(description='Fetch answer by answer_id')
     @api.marshal_with(answer_schema(api))
-    @api.response(400, 'Invalid QuestionId or AnswerId')
-    @api.response(401, 'Unauthorized AccessToken')
+    @api.response(400, 'Invalid question_id or answer_id')
+    @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists answer')
     def get(self, question_id, answer_id):
         try:
             question_id = ObjectId(question_id)
         except InvalidId:
-            raise BadRequest('Invalid QuestionId')
+            raise BadRequest(errors.INVALID_QUESTION_ID)
 
         try:
             answer_id = ObjectId(answer_id)
         except InvalidId:
-            raise BadRequest('Invalid AnswerId')
+            raise BadRequest(errors.INVALID_ANSWER_ID)
 
         records_fetched = mongo.db.questions.find_one({
             "$and": [{"_id": question_id},
                      {"answers._id": answer_id}]}, {"answers.$"})
 
         if records_fetched is None:
-            raise NotFound('Not exists answer')
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         return records_fetched['answers'][0]
 
-    @api.doc(description='Remove answer by AnswerId')
+    @api.doc(description='Remove answer by answer_id')
     @api.response(204, 'Success')
-    @api.response(400, 'Invalid QuestionId or AnswerId')
-    @api.response(401, 'Unauthorized AccessToken')
+    @api.response(400, 'Invalid question_id or answer_id')
+    @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists answer')
     def delete(self, question_id, answer_id):
         try:
             question_id = ObjectId(question_id)
         except InvalidId:
-            raise BadRequest('Invalid QuestionId')
+            raise BadRequest(errors.INVALID_QUESTION_ID)
 
         try:
             answer_id = ObjectId(answer_id)
         except InvalidId:
-            raise BadRequest('Invalid AnswerId')
+            raise BadRequest(errors.INVALID_ANSWER_ID)
 
         query = {"$and": [{"_id": answer_id}, {"writer_id": ObjectId(get_jwt_identity())}]}
 
@@ -130,6 +132,6 @@ class Answer(Resource):
                                                         {"$pull": {"answers": query}})
 
         if records_updated.modified_count <= 0:
-            raise NotFound('Not exists answer')
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         return '', 204
