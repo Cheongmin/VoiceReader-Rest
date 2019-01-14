@@ -1,12 +1,14 @@
-import datetime
 import os
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_pymongo import PyMongo
 
+from .services.s3_uploader import S3Uploader
+
 jwt = JWTManager()
 mongo = PyMongo()
+file_manager = S3Uploader()
 
 
 def create_app():
@@ -24,8 +26,6 @@ def create_app():
 def configure_app(app):
     from voicereader.extensions.json_encoder import JSONEncoder
 
-    app.config['VOICEREADER_API_VERSION'] = 'develop version'
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
     if app.config['ENV'] == 'development':
         initialize_development_env(app)
     elif app.config['ENV'] == 'production':
@@ -45,26 +45,26 @@ def initialize_production_env(app):
 
 
 def configure_service(app):
-    jwt.init_app(app)
+    file_manager.init_app(app)
+
+    from pymongo import TEXT
+
     mongo.init_app(app)
+    mongo.db.users.create_index([('fcm_uid', TEXT)], unique=True)
+
+    jwt.init_app(app)
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error_string):
+        return jsonify({
+            'message': error_string
+        }), 401
 
 
 def register_blueprints(app):
-    from voicereader.user.controller import get_user_api
-    from voicereader.question.controller import get_question_api
-    from voicereader.answer.controller import get_answer_api
-    from voicereader.auth.controller import get_auth_api
+    from .api.v1 import api_v1
 
-    app.register_blueprint(get_user_api(app), url_prefix='/api/v1/users')
-    app.register_blueprint(get_question_api(app), url_prefix='/api/v1/questions')
-    app.register_blueprint(get_answer_api(app), url_prefix='/api/v1/questions/<question_id>/answers')
-    app.register_blueprint(get_auth_api(), url_prefix='/api/v1')
-
-
-def add_namespaces(api):
-    from voicereader.user.controller import api as user
-
-    api.add_namespace(user)
+    app.register_blueprint(api_v1)
 
 
 def register_server_info_handlers(app):
