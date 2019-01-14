@@ -1,9 +1,0 @@
-scripts/
-tests/
-
-.gitignore
-.travis.yml
-
-
-nginx.conf
-secrets.tar.enc
