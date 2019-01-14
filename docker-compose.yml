@@ -2,7 +2,7 @@ version: "3.0"
 
 services:
   nginx:
-    image: nginx:1.13.5
+    image: nginx:1.13.5-alpine
     ports:
       - "80:80"
     volumes:
@@ -16,7 +16,7 @@ services:
       - app-resource-volume:/app/upload
 
   mongodb:
-    image: mongo:4.0.4
+    image: mvertes/alpine-mongo:4.0.5-0
     volumes:
       - data-volume:/data/db
     ports:
