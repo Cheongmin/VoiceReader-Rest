@@ -1,4 +1,4 @@
-from voicereader.constant.media import allowed_file
+from voicereader.extensions.media import allowed_file
 
 
 def test_valid_file():
