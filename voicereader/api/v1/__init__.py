@@ -13,9 +13,11 @@ jwt._set_error_handler_callbacks(api)
 def add_namespaces():
     from .auth.controller import api as auth_ns
     from .user.controller import api as user_ns
+    from .question.controller import api as question_ns
 
     api.add_namespace(auth_ns, path='/oauth2')
     api.add_namespace(user_ns, path='/users')
+    api.add_namespace(question_ns, path='/questions')
 
 
 add_namespaces()
