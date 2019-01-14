@@ -9,6 +9,7 @@ from werkzeug.exceptions import NotFound, Unauthorized
 from firebase_admin import auth, initialize_app, credentials
 
 from .schema import access_token_schema, refresh_token_schema
+from .. import errors
 from ..user.controller import get_user_id
 
 credential = credentials.Certificate('firebase-adminsdk.json')
@@ -17,7 +18,7 @@ firebase_app = initialize_app(credential)
 api = Namespace('Oauth2 API', description='Oauth2 related operation')
 
 get_parser = api.parser()
-get_parser.add_argument('Authorization', location='headers', required=True, help='IdToken from firebase auth')
+get_parser.add_argument('Authorization', location='headers', required=True, help='ID Token from firebase auth')
 
 post_parser = api.parser()
 post_parser.add_argument('Authorization', location='headers', required=True, help='Bearer <refresh_token>')
@@ -41,12 +42,12 @@ def _refresh_token_expire_in():
 
 @api.route('/token')
 class Token(Resource):
-    @api.doc(description='Generate new AccessToken by firebase auth idToken')
+    @api.doc(description='Generate new AccessToken by firebase auth ID Token')
     @api.expect(get_parser)
     @api.response(200, 'Success', access_token_schema(api))
-    @api.response(400, 'Failed when not include "Authorization" header')
-    @api.response(401, 'Failed when request id token is invalid')
-    @api.response(404, 'Failed  when not registered id token')
+    @api.response(400, 'Not included "Authorization" header')
+    @api.response(401, 'Invalid request ID Token')
+    @api.response(404, 'Not registered user by id token')
     def get(self):
         args = get_parser.parse_args()
 
@@ -54,14 +55,14 @@ class Token(Resource):
 
         try:
             decoded_token = auth.verify_id_token(id_token, firebase_app)
-        except ValueError as ex:
-            raise Unauthorized(str(ex))
+        except ValueError:
+            raise Unauthorized(errors.INVALID_ID_TOKEN)
 
         firebase_uid = decoded_token['sub']
 
         user_id = get_user_id(firebase_uid)
         if not user_id:
-            raise NotFound('Not registered id token')
+            raise NotFound(errors.NOT_REGISTERED_USER)
 
         access_token = create_access_token(user_id, expires_delta=_access_token_expire_delta())
         refresh_token = create_refresh_token(user_id, expires_delta=_refresh_token_expire_delta())
@@ -75,11 +76,10 @@ class Token(Resource):
         })
 
     @jwt_refresh_token_required
-    @api.doc(description='Fetch new AccessToken by RefreshToken')
+    @api.doc(description='Generate new AccessToken by RefreshToken')
     @api.expect(post_parser)
     @api.response(200, 'Success', refresh_token_schema(api))
-    @api.response(400, 'Failed when not include "Authorization" header')
-    @api.response(401, 'Failed when invalid refresh_token')
+    @api.response(401, 'Invalid RefreshToken')
     def post(self):
         user_id = get_jwt_identity()
 
