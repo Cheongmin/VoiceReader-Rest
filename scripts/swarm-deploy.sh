@@ -6,12 +6,11 @@ api_image_name=voicereader-rest
 
 if sudo docker stack ls --format '{{.Name}}' | grep -Eq "^${deploy_stack_name}\$"; then
   docker pull ${docker_user_name}/${api_image_name}:latest
-
   docker service update --image ${docker_user_name}/${api_image_name} ${deploy_stack_name}_api
-
-  # docker rm $(docker ps -aq --filter "status=exited")
-  # docker rmi $(docker images -q --filter "dangling=true")
-  docker system prune -f
 else
   docker stack deploy -c stack-compose.yml ${deploy_stack_name}
 fi
+
+# docker rm $(docker ps -aq --filter "status=exited")
+# docker rmi $(docker images -q --filter "dangling=true")
+docker system prune -f
