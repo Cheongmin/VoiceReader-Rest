@@ -1,6 +1,6 @@
 import os
 
-from fabric.api import local, run, sudo, env, put
+from fabric.api import run, env, put
 from fabric.context_managers import cd
 
 env.user = os.getenv('EC2_USER')
