@@ -6,6 +6,8 @@ upload/
 *.pyc
 .coverage
 
+coverage.xml
+
 firebase-adminsdk.json
 voicereader-vm.pem
 config.development.json
