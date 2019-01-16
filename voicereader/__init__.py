@@ -37,11 +37,13 @@ def configure_app(app):
 
 
 def initialize_development_env(app):
-    app.config['MONGO_URI'] = 'mongodb://localhost:27017/VoiceReader'
+    app.config['VOICEREADER_API_VERSION'] = 'dev version'
 
 
 def initialize_production_env(app):
     app.config['VOICEREADER_API_VERSION'] = os.getenv('VOICEREADER_API_VERSION')
+    if app.config['VOICEREADER_API_VERSION'] == '':
+        app.config['VOICEREADER_API_VERSION'] = 'dev version'
 
 
 def configure_service(app):
@@ -70,7 +72,7 @@ def register_blueprints(app):
 def register_server_info_handlers(app):
     @app.route('/api/info/version')
     def get_version():
-        return 'develop version3'
+        return app.config['VOICEREADER_API_VERSION']
 
     @app.route('/api/info/env')
     def get_info():
