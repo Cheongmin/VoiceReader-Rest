@@ -7,7 +7,11 @@ install:
   - pip install -r requirements.txt
 
 script:
-  - pytest
+  - pytest --cov=voicereader tests/
+
+after_success:
+  - coverage xml
+  - python-codacy-coverage -r coverage.xml
 
 branches:
   only:
