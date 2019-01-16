@@ -13,11 +13,6 @@ after_success:
   - coverage xml
   - python-codacy-coverage -r coverage.xml
 
-branches:
-  only:
-    - dev
-    - master
-
 deploy:
   provider: script
   script:
