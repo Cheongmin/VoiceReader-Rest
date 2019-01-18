@@ -20,7 +20,6 @@ deploy:
     bash scripts/dockerhub-deploy.sh && fab -f scripts/ec2-deploy.py deploy
   skip_cleanup: true
   on:
-    branch: dev
     tags: true
 
 notifications:
