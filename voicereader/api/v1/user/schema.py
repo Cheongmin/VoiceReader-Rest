@@ -14,5 +14,6 @@ def user_schema(api):
 
 def post_user_schema(api):
     return api.model('Post User Payload', {
-        'display_name': fields.String(description='The Nickname', required=True, example='Lion')
+        'display_name': fields.String(description='The Nickname', required=True, example='Lion'),
+        'picture': fields.String(description='URL of profile picture')
     })

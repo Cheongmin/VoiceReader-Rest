@@ -44,27 +44,27 @@ class UserList(Resource):
         except ValueError:
             raise Unauthorized(errors.INVALID_ID_TOKEN)
 
-        try:
-            body = literal_eval(json.dumps(request.get_json()))
-        except ValueError:
+        if not request.is_json:
             raise BadRequest(errors.INVALID_PAYLOAD)
 
-        body['_id'] = ObjectId()
-        body['email'] = decoded_token['email']
-        body['fcm_uid'] = decoded_token['sub']
-        body["created_date"] = time.mktime(datetime.datetime.utcnow().timetuple())
+        req_payload = request.get_json()
 
-        if 'picture' in decoded_token:
-            body['picture'] = decoded_token['picture']
-        else:
-            body['picture'] = ''
+        json_data = dict()
+        json_data['display_name'] = req_payload['display_name']
+        json_data['picture'] = req_payload['picture'] if 'picture' in req_payload else ''
+        json_data['_id'] = ObjectId()
+        json_data['email'] = decoded_token['email']
+        json_data['fcm_uid'] = decoded_token['sub']
+        json_data["created_date"] = time.mktime(datetime.datetime.utcnow().timetuple())
+        if json_data['picture'] == '' and 'picture' in decoded_token:
+            json_data['picture'] = decoded_token['picture']
 
         try:
-            mongo.db.users.insert(body)
+            mongo.db.users.insert(json_data)
         except DuplicateKeyError:
             raise Conflict(errors.ALREADY_EXISTS_USER)
 
-        return body, 201
+        return json_data, 201
 
 
 parser = api.parser()
