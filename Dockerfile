@@ -1,5 +1,4 @@
 FROM alpine:3.7
-MAINTAINER Gyuhwan Kim <gyuhwan.a.kim@gmail.com>
 
 ENV VOICEREADER_API_VERSION $TRAVIS_TAG
 
