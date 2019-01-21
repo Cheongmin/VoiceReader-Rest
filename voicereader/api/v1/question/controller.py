@@ -14,8 +14,9 @@ from bson.errors import InvalidId
 from voicereader import mongo, file_manager
 from voicereader.extensions.media import allowed_file
 
-from .schema import question_schema
+from .schema import question_schema, question_with_writer_schema
 from .. import errors
+from ..user.controller import get_user
 
 api = Namespace('Question API', description='Question related operation')
 
@@ -41,7 +42,7 @@ class QuestionList(Resource):
     @jwt_required
     @api.doc(description='Fetch questions')
     @api.expect(get_parser)
-    @api.marshal_list_with(question_schema(api))
+    @api.marshal_list_with(question_with_writer_schema(api))
     @api.response(401, 'Invalid AccessToken')
     def get(self):
         args = get_parser.parse_args()
@@ -54,6 +55,7 @@ class QuestionList(Resource):
             .sort("created_date", -1).skip(int(offset)).limit(int(size))
 
         for record in records_fetched:
+            record['writer'] = get_user(record['writer_id'])
             result.append(record)
 
         return result
@@ -96,7 +98,7 @@ class QuestionList(Resource):
 class Question(Resource):
     @jwt_required
     @api.doc(description='Fetch question by question_id')
-    @api.response(200, 'Success', question_schema(api))
+    @api.response(200, 'Success', question_with_writer_schema(api))
     @api.response(400, 'Invalid question_id')
     @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists question')
@@ -106,11 +108,13 @@ class Question(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        records_fetched = mongo.db.questions.find_one({"_id": ObjectId(question_id)})
-        if records_fetched is None:
+        record = mongo.db.questions.find_one({"_id": ObjectId(question_id)})
+        if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        return jsonify(records_fetched)
+        record['writer'] = get_user(record['writer_id'])
+
+        return jsonify(record)
 
     @jwt_required
     @api.doc(description='Remove question by question_id')
