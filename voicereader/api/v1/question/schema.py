@@ -1,4 +1,5 @@
 from flask_restplus import fields
+from ..user.schema import user_schema
 
 
 def question_schema(api):
@@ -10,4 +11,10 @@ def question_schema(api):
         'created_date': fields.Integer(description='datetime when create question', example='1547405521'),
         'sound_url': fields.String(description='sound file url',
                                    example='{base_url}/api/v1/questions/sound/5c3c4fe4182838cf4ea9e6f1.mp3'),
+    })
+
+
+def question_with_writer_schema(api):
+    return api.inherit('Question Detail', question_schema(api), {
+        'writer': fields.Nested(user_schema(api), description='Infomation of Writer')
     })
