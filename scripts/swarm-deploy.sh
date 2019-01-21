@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+
+DOCKER_USERNAME=gyuhwankim
+DOCKER_IMAGE_NAME=voicereader-rest
+DEPLOY_STACK_NAME=voicereader-rest
+CONTAINER_API_NAME=api
+
+
 docker pull ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:latest
 
 if sudo docker stack ls --format '{{.Name}}' | grep -Eq "^${DEPLOY_STACK_NAME}\$"; then
