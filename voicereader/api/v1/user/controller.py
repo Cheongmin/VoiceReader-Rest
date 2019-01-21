@@ -87,7 +87,7 @@ class User(Resource):
         except bson.errors.InvalidId:
             raise BadRequest(errors.INVALID_USER_ID)
 
-        record_fetched = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+        record_fetched = mongo.db.users.find_one({"_id": user_id})
         if record_fetched is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
@@ -184,6 +184,13 @@ class UserPhotoGet(Resource):
     @jwt_required
     def get(self, user_id, file_name):
         return file_manager.fetch_file(PHOTO_PREFIX, file_name)
+
+
+def get_user(user_id):
+    try:
+        return mongo.db.users.find_one({"_id": ObjectId(user_id)})
+    except Exception as ex:
+        return None
 
 
 def get_user_id(firebase_uid):
