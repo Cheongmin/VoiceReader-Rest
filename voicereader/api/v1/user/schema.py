@@ -8,6 +8,7 @@ def user_schema(api):
         'email': fields.String(description='Email of user', example='lion@example.com'),
         'fcm_uid': fields.String(description='Unique id from firebase auth'),
         'picture': fields.String(description='URL of profile picture'),
+        'location': fields.String(description='Location of user', default=''),
         'created_date': fields.Integer(description='user created date', example=1547188815),
     })
 
@@ -15,5 +16,6 @@ def user_schema(api):
 def post_user_schema(api):
     return api.model('Post User Payload', {
         'display_name': fields.String(description='The Nickname', required=True, example='Lion'),
-        'picture': fields.String(description='URL of profile picture')
+        'picture': fields.String(description='URL of profile picture'),
+        'location': fields.String(description='Location of user', default=''),
     })
