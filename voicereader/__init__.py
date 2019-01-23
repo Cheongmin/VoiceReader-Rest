@@ -31,19 +31,20 @@ def configure_app(app):
     elif app.config['ENV'] == 'production':
         initialize_production_env(app)
 
-    app.config.from_json('../config.json')
-    app.config.from_json('../config.{}.json'.format(app.config['ENV']))
+    app.config.from_json('../config.json', True)
+    app.config.from_json('../config.{}.json'.format(app.config['ENV']), True)
+    app.config.from_envvar('MONGO_URI', True)
+    app.config.from_envvar('VOICEREADER_API_VERSION', True)
+
     app.json_encoder = JSONEncoder
 
 
 def initialize_development_env(app):
-    app.config['VOICEREADER_API_VERSION'] = 'dev version'
+    pass
 
 
 def initialize_production_env(app):
-    app.config['VOICEREADER_API_VERSION'] = os.getenv('VOICEREADER_API_VERSION')
-    if app.config['VOICEREADER_API_VERSION'] == '':
-        app.config['VOICEREADER_API_VERSION'] = 'dev version'
+    pass
 
 
 def configure_service(app):
