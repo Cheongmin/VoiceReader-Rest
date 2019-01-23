@@ -34,5 +34,8 @@ def add_namespaces(api, config):
 def add_debug_resources():
     from .auth.controller import DebugToken
     from .auth.controller import api as auth_ns
+    from .user.controller import DebugUser
+    from .user.controller import api as user_ns
 
     auth_ns.add_resource(DebugToken, '/token/debug')
+    user_ns.add_resource(DebugUser, '/debug')
