@@ -14,7 +14,7 @@ def answer_schema(api):
 
 
 def answer_with_writer_schema(api):
-    return api.inherit('Question Detail', answer_schema(api), {
+    return api.inherit('Answer Detail', answer_schema(api), {
         'writer': fields.Nested(user_schema(api), description='Infomation of Writer')
     })
 
