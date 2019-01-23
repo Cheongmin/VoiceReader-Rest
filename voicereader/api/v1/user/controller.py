@@ -199,10 +199,7 @@ class DebugUser(Resource):
 
 
 def get_user(user_id):
-    try:
-        return mongo.db.users.find_one({"_id": ObjectId(user_id)})
-    except Exception as ex:
-        return None
+    return mongo.db.users.find_one({"_id": ObjectId(user_id)})
 
 
 def get_user_id(firebase_uid):
