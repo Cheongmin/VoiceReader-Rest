@@ -1,6 +1,7 @@
 FROM alpine:3.7
 
-ENV VOICEREADER_API_VERSION $TRAVIS_TAG
+ARG APP_VERSION
+ENV VOICEREADER_API_VERSION $APP_VERSION
 
 COPY ./voicereader /app/voicereader
 COPY config.json /app
