@@ -1,5 +1,7 @@
 from flask_restplus import fields
 
+from ..user.schema import user_schema
+
 
 def answer_schema(api):
     return api.model("Answer about Question", {
@@ -8,6 +10,12 @@ def answer_schema(api):
         'writer_id': fields.String(description='UserID of writer', example='5c3c53a4182838d29bf3e948'),
         'contents': fields.String(description='contents of answer', example='<contents>'),
         'created_date': fields.Integer(description='datetiem when create answer', example='1547425044')
+    })
+
+
+def answer_with_writer_schema(api):
+    return api.inherit('Question Detail', answer_schema(api), {
+        'writer': fields.Nested(user_schema(api), description='Infomation of Writer')
     })
 
 

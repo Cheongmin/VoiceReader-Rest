@@ -14,8 +14,9 @@ from ast import literal_eval
 
 from voicereader import mongo
 
-from .schema import answer_schema, post_answer_schema
+from .schema import answer_schema, answer_with_writer_schema, post_answer_schema
 from .. import errors
+from ..user.controller import get_user
 
 api = Namespace('Answer about Question API', description='Answers related operation')
 
@@ -26,8 +27,9 @@ common_parser.add_argument('Authorization', location='headers', required=True, h
 @api.route('/<question_id>/answers')
 @api.expect(common_parser)
 class AnswerList(Resource):
+    @jwt_required
     @api.doc(description='Fetch answers by question_id')
-    @api.marshal_list_with(answer_schema(api))
+    @api.marshal_list_with(answer_with_writer_schema(api))
     @api.response(400, 'Invalid question_id')
     @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists question')
@@ -46,10 +48,12 @@ class AnswerList(Resource):
 
         if 'answers' in records_fetched:
             for record in records_fetched['answers']:
+                record['writer'] = get_user(record['writer_id'])
                 result.append(record)
 
         return result
 
+    @jwt_required
     @api.doc(description='Add new answer', )
     @api.expect(post_answer_schema(api), validate=True)
     @api.marshal_with(answer_schema(api), code=201)
@@ -86,7 +90,7 @@ class AnswerList(Resource):
 class Answer(Resource):
     @jwt_required
     @api.doc(description='Fetch answer by answer_id')
-    @api.marshal_with(answer_schema(api))
+    @api.marshal_with(answer_with_writer_schema(api))
     @api.response(400, 'Invalid question_id or answer_id')
     @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists answer')
@@ -108,8 +112,12 @@ class Answer(Resource):
         if records_fetched is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        return records_fetched['answers'][0]
+        result = records_fetched['answers'][0]
+        result['writer'] = get_user(result['writer_id'])
 
+        return result
+
+    @jwt_required
     @api.doc(description='Remove answer by answer_id')
     @api.response(204, 'Success')
     @api.response(400, 'Invalid question_id or answer_id')
