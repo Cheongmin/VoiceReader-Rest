@@ -186,11 +186,20 @@ class UserPhotoGet(Resource):
         return file_manager.fetch_file(PHOTO_PREFIX, file_name)
 
 
+class DebugUser(Resource):
+    @api.doc(description='Fetch all users for debug')
+    @api.marshal_list_with(user_schema(api))
+    def get(self):
+        result = []
+
+        for item in mongo.db.users.find():
+            result.append(item)
+
+        return result
+
+
 def get_user(user_id):
-    try:
-        return mongo.db.users.find_one({"_id": ObjectId(user_id)})
-    except Exception as ex:
-        return None
+    return mongo.db.users.find_one({"_id": ObjectId(user_id)})
 
 
 def get_user_id(firebase_uid):
