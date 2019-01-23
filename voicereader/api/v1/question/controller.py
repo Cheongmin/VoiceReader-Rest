@@ -29,8 +29,9 @@ get_parser.add_argument('size', default=3, help='size of questions')
 
 post_parser = api.parser()
 post_parser.add_argument('sound', type=FileStorage, location='files', required=True, help='file of sound')
-post_parser.add_argument('subtitles', type=str, location='form', required=True, help='scripts of subtitle')
+post_parser.add_argument('title', type=str, location='form', required=True, help='title of question')
 post_parser.add_argument('contents', type=str, location='form', required=True, help='contents of question')
+post_parser.add_argument('subtitles', type=str, location='form', required=True, help='scripts of subtitle')
 
 SOUND_PREFIX = 'sound/'
 SOUND_ALLOWED_EXTENSIONS = set(['mp3', 'm4a'])
@@ -72,6 +73,7 @@ class QuestionList(Resource):
 
         json_data = dict()
         json_data['_id'] = ObjectId()
+        json_data['title'] = args['title']
         json_data['subtitles'] = args['subtitles']
         json_data['contents'] = args['contents']
         json_data["writer_id"] = ObjectId(get_jwt_identity())
