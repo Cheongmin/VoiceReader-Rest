@@ -64,9 +64,9 @@ def configure_service(app):
 
 
 def register_blueprints(app):
-    from .api.v1 import api_v1
+    from .api.v1 import create_api_v1
 
-    app.register_blueprint(api_v1)
+    app.register_blueprint(create_api_v1(app.config))
 
 
 def register_server_info_handlers(app):
