@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_pymongo import PyMongo
@@ -26,25 +24,12 @@ def create_app():
 def configure_app(app):
     from voicereader.extensions.json_encoder import JSONEncoder
 
-    if app.config['ENV'] == 'development':
-        initialize_development_env(app)
-    elif app.config['ENV'] == 'production':
-        initialize_production_env(app)
-
-    app.config.from_json('../config.json', True)
+    app.config.from_json('../config.json')
     app.config.from_json('../config.{}.json'.format(app.config['ENV']), True)
     app.config.from_envvar('MONGO_URI', True)
     app.config.from_envvar('VOICEREADER_API_VERSION', True)
 
     app.json_encoder = JSONEncoder
-
-
-def initialize_development_env(app):
-    pass
-
-
-def initialize_production_env(app):
-    pass
 
 
 def configure_service(app):
