@@ -5,7 +5,7 @@ import os
 from flask import jsonify, request
 from flask_restplus import Namespace, Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.exceptions import BadRequest, NotFound, UnsupportedMediaType
+from werkzeug.exceptions import BadRequest, Forbidden, NotFound, UnsupportedMediaType
 from werkzeug.datastructures import FileStorage
 
 from bson import ObjectId
@@ -110,7 +110,7 @@ class Question(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        record = mongo.db.questions.find_one({"_id": ObjectId(question_id)})
+        record = get_question_by_id(question_id)
         if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
@@ -123,6 +123,7 @@ class Question(Resource):
     @api.response(204, 'Success')
     @api.response(400, 'Invalid question_id')
     @api.response(401, 'Invalid AccessToken')
+    @api.response(403, 'Not equal between request user_id and writer_id')
     @api.response(404, 'Not exists question')
     def delete(self, question_id):
         try:
@@ -130,13 +131,20 @@ class Question(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        record_deleted = mongo.db.questions.delete_one({"$and": [{"_id": question_id},
-                                                                 {"writer_id": ObjectId(get_jwt_identity())}]})
-
-        if record_deleted.deleted_count <= 0:
+        question = get_question_by_id(question_id)
+        if question is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
+        if str(question['writer_id']) != str(get_jwt_identity()):
+            raise Forbidden(errors.NOT_EQUAL_USER_ID)
+
+        mongo.db.questions.delete_one({"_id": question_id})
+
         return '', 204
+
+
+def get_question_by_id(obj_question_id):
+    return mongo.db.questions.find_one({"_id": obj_question_id})
 
 
 @api.route('/sound/<path:filename>')

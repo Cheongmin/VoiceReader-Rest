@@ -5,7 +5,7 @@ import datetime
 from flask import request
 from flask_restplus import Namespace, Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.exceptions import BadRequest, NotFound
+from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -105,17 +105,13 @@ class Answer(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_ANSWER_ID)
 
-        records_fetched = mongo.db.questions.find_one({
-            "$and": [{"_id": question_id},
-                     {"answers._id": answer_id}]}, {"answers.$"})
-
-        if records_fetched is None:
+        record = get_answer_by_id(question_id, answer_id)
+        if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        result = records_fetched['answers'][0]
-        result['writer'] = get_user(result['writer_id'])
+        record['writer'] = get_user(record['writer_id'])
 
-        return result
+        return record
 
     @jwt_required
     @api.doc(description='Remove answer by answer_id')
@@ -134,12 +130,23 @@ class Answer(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_ANSWER_ID)
 
-        query = {"$and": [{"_id": answer_id}, {"writer_id": ObjectId(get_jwt_identity())}]}
-
-        records_updated = mongo.db.questions.update_one({"_id": question_id},
-                                                        {"$pull": {"answers": query}})
-
-        if records_updated.modified_count <= 0:
+        answer = get_answer_by_id(question_id, answer_id)
+        if answer is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
+        if str(answer['writer_id']) != str(get_jwt_identity()):
+            raise Forbidden(errors.NOT_EQUAL_USER_ID)
+
+        mongo.db.questions.update_one({"_id": question_id}, {"$pull": {"answers": {"_id": answer_id}}})
+
         return '', 204
+
+
+def get_answer_by_id(obj_question_id, obj_answer_id):
+    answer = mongo.db.questions.find_one({
+            "$and": [{"_id": obj_question_id}, {"answers._id": obj_answer_id}]}, {"answers.$"})
+
+    if answer is None:
+        return None
+
+    return answer['answers'][0]
