@@ -1,12 +1,12 @@
 FROM alpine:3.7
 
-ARG APP_VERSION
-ENV VOICEREADER_API_VERSION $APP_VERSION
+ENV FLASK_ENV development
 
 COPY ./voicereader /app/voicereader
 COPY config.json /app
-COPY config.production.json /app
+COPY config.development.json /app
 COPY firebase-adminsdk.json /app
+COPY run.py /app
 WORKDIR /app
 
 RUN apk add -U --no-cache gcc build-base \
@@ -15,4 +15,4 @@ RUN apk add -U --no-cache gcc build-base \
 
 EXPOSE 5000
 
-CMD [ "gunicorn", "--bind", "0.0.0.0:5000", "voicereader:create_app()" ]
+CMD [ "python3", "run.py" ]

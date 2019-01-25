@@ -8,9 +8,11 @@ env.hosts = os.getenv('EC2_HOST')
 env.key_filename = 'voicereader-vm.pem'
 
 src = 'voicereader-rest/'
+version = os.getenv('TRAVIS_TAG')
 
 
 def deploy():
+    run('export VOICEREADER_API_VERSION={}'.format(version))
     run('mkdir -p {}'.format(src))
 
     put('nginx.conf', src)
