@@ -33,6 +33,8 @@ def configure_app(app):
 
     app.config.from_json('../config.json')
     app.config.from_json('../config.{}.json'.format(app.config['ENV']))
+    app.config['MONGO_URI'] = os.getenv('MONGO_URI', app.config['MONGO_URI'])
+
     app.json_encoder = JSONEncoder
 
 
