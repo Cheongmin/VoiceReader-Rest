@@ -181,7 +181,6 @@ class UserPhoto(Resource):
 @api.route('/<user_id>/photo/<path:file_name>')
 @api.doc(False)
 class UserPhotoGet(Resource):
-    @jwt_required
     def get(self, user_id, file_name):
         return file_manager.fetch_file(PHOTO_PREFIX, file_name)
 
