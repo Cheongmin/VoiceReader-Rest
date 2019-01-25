@@ -1,10 +1,5 @@
-from voicereader import app
-
-
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
+from voicereader import create_app
 
 if __name__ == '__main__':
-    app.run()
+    app = create_app()
+    app.run(host='0.0.0.0')

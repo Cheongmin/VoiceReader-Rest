@@ -1,0 +1,38 @@
+language: python
+python: 3.7
+dist: xenial
+sudo: true
+
+install:
+  - pip install -r requirements.txt
+
+script:
+  - pytest --cov=voicereader tests/
+
+after_success:
+  - coverage xml
+  - python-codacy-coverage -r coverage.xml
+
+deploy:
+  provider: script
+  script:
+    bash scripts/dockerhub-deploy.sh && fab -f scripts/ec2-deploy.py deploy
+  skip_cleanup: true
+  on:
+    tags: true
+
+notifications:
+  slack:
+    rooms:
+      secure: M1StyLgsHCDBINSO7Y+Y+kY+MkQrfc0EBr5qVq1jFHGjFLQNCvztGKGsgxqBwVdTpW/EHHO1ezCYJCeUwIoE5Po9YbturwO0IzJ/cXiu+BjHuu9pWvUcBkV/8aZLGo5KiVPifQaLrvvqUZrdLHc+tF14tPX5wPHy9YaLkjjSE9qpP4qf6COkHfIz7RfN134T+2WCXE3Gs3a60nrxpnlL9Bk0/Ba8w4OYxbGY9ihhUwbpVQJ91UA0Ee4ElC6w6FRy2qit6Jymn9KUexx97C5ipTwB1a7MROmgG1kF5XPL2YlTD+N4sulSUg+c9XTukWX/bNIFiw6Mr3Ntzi4Q1tQGLI0vkSkEtY5sfn7iE7EveZq1rCangqL4I1pUCtjAoWcUPZ86omI5GPoWRRqwxXnXN3YdRypGyOprRRH24n+3Au2oy7gBOWwbKWjO85uINzEgE+p97R7chTGAY/2pnSdEadbbcibMg3ONYRraj7mK3GnRXVoFNWeFSkFHiWS0RyNlMuhRNn8/CHGfw7+Au5/druC/lpjLMlJQLaacXNAo+yh4cff1pZwaaouFnCbV2gbzcHHK6//LVpBfcSaYzmM3ubF+HsgH0CfLyMP+b4mCnu+0azu8Xg2srRwl6ud7oSjuPRL80d1FpWv/uGME59NS/eR+kAQAAjMDlxyzCYlsdJg=
+
+env:
+  global:
+    - DOCKER_USERNAME=gyuhwankim
+    - secure: N9aQX4i5OmYdgi/jqY/xXouVvLfloaLrUr69//PKk0QbIcbbhA7Cq4wv3T1OLOFAyaHSPb7t5AZ6nK0dY2IvqO8iEznrVEA+SNqABd5/yd6aE0W1hz2qETn0WiV5k+YCUGMRT5iUgoAfOhG2eqv8LfwbOG2OqvztotI7CJ12jXBPfEvHwWyvhd7Tp/O4ofHRWlgXogdzFftemvPBUpmbHn3dKIccUZug9hUnNqGbjQrXWHK1SJmvcYkvttrMGsDuF0q1Lh51KE5EaaizSmiJITpYnPZIEQY/H5waUXcq0HyrL35gu8rFCQTIZhTawMKeyTLA+UIbWGhjEJ2Fq9gn2/IlZX/hchyR/FbH+ppf6it9iMLzY2e1LAvPjITRIgBLBCsbumwdxm1LnJPLwLA6nZVcoKDvZ8WBNjjHwh8z1YYSKhLtv8vK93aj3KOZKVLN08c+1pap+gP1DdG2n6F0+GAsoaH9LZlzTLRlMlWyWdDvcyyRKd4fLxNrdC/hMDs9girEM87xLHKTK+Lio1G9Cvbt54Qd4w0ckswMIb2znvuF//E52z4Gom6zC9+HE9kkUqc8rokWclThaMxur+IMUgXLhYMIlMfnlaTINrOsdzBd6NFHQDJ98cFYbh9uhhZmuzRxUpODOpBx8rfmKTMUNv9IJKgsUA/5lXqxgMnQ0yA=
+    - secure: ObbFXib7khwojyO4U+0NF0l7mcE/aMKX9MpF66jqzvN+0VThHp1erxFUlK8uYYQo/hKfe7898J676Vx6EPfWQ2c6hpABXGNI9FjJsAz1UP6cSwngZxxJX3Xm5OIxtGdfiMka8yzjCaNnP1s+nX1M3L3N+/Aqh0OYIaLUc5rUFRy9zQiKo5RTv5wVqjRZFH+yKUllVv92iA0Xdg6MDYu/dBayjfs6qFfgHA5uz7IrqsSaEeEoLA9c83f/XDoMg4GXegsrl79F6BdX7LbQZCXJkv1tNiSDC29L/iPEtHYRKfDfJ/guRSONd6Ukpv6AsJr0lu8BGZzoKIMLmwcASm+wv86s8SOBHROoU1wynJlcNDD7AuWj0ObUZTVVDVR1+VI9mKzJuVNNLnjM0y6d3fWJ3yNPqs7VisOD14laSYOfC/AuGbxBmUZ3eIx5ZSTUIamgi5l9apOk1OYK8yzUD/a2Cy7Ir2rEVFdhvFkpFamWJVmg42qARzPELN9yVA/ZPqUcUJMAQZ0Rb1iZBLebYbW/ciXs3Cxd/0KVKte0ncejXQthKxNLz+q3/gMp7OYRdlChChEfuajTv5qeQRCY73rtW4jCJFKcBPJ12DCCxlSYk2pCoImvk5dS5ff2A4Hl7q2lf9+wI92mcWTimav3+t7X7jv9iwYujrWJ4zc5dhfGLag=
+    - secure: rMrLLjWM7qysAqkxqA7K936aUCAFHJDW0S++cfITIKgaZjdGlDtOA5A5KNRSaQNHlyLuSfMhcMWlmWu/tnU/hPy8BnAAn7jy0fCB5sshUrhl0v9TCmE1q3++zG12N7Bjc1OKnhDxHOgfptdycVexyxiHS/1ArWv57j76T0pVYp7Gduk9SaVd2t4kj6gs05+v+Fy3J3B9uD6mTavejTzIODvyqyG714zun2dDEQCMH9SNOwrKxv23tYZpL24D71xk8calAfvBoA/dHPARD1zOIoMamM4kxakUePOW6caUoSlCCzLEQTXc2PivYvoxCEuz2tzONC+PLwb40Jd88Sa/pYB/Nhyl+RL1tST0ZIeRo9Kh/eOzAEUkH99tYrTkxRbqCwLKthYZoazVTvFboyt6zOFLoIir1nlt8PE3KQpSul/+OLQUr51GW8Idb3yMeFoJmuGD2lmkUMiF9mlwImQa7IRCSnCX4ctAi13jRZB3qVqKcnoRiw7NLQUfXkOZQaDKvG0OPwgRIUcoEQHt5lctWggwoodTFPlodWlv2gTqFaikqdUgpWVMYRkxYrCcbkYu9ezw9AgiYUz5bVdNVXTHDVKRVxkR1HGA2y4quBnpY51/wx3Q0KLZltWr8ji1/Jg4A4njJ1w5LxHyrN5EW28CeM/zXJqYm0Z51fpqD4zffP4=
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_98174358e853_key -iv $encrypted_98174358e853_iv -in secrets.tar.enc -out secrets.tar -d
+  - tar xvf secrets.tar

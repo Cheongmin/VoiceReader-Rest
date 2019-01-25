@@ -1,0 +1,10 @@
+{
+  "MONGO_URI": "mongodb://mongodb:27017/VoiceReader",
+
+  "JWT_ACCESS_TOKEN_EXPIRES_SEC": 86400,
+  "JWT_REFRESH_TOKEN_EXPIRES_SEC": 2592000,
+  "JWT_IDENTITY_CLAIM": "sub",
+  "JWT_ERROR_MESSAGE_KEY": "message",
+
+  "FIREBASE_CONFIG_PATH": "firebase-adminsdk.json"
+}
