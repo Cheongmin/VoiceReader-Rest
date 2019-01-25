@@ -74,7 +74,7 @@ def register_blueprints(app):
 def register_server_info_handlers(app):
     @app.route('/api/info/version')
     def get_version():
-        return 'v0.5.0'
+        return app.config['VOICEREADER_API_VERSION']
 
     @app.route('/api/info/env')
     def get_info():
