@@ -17,7 +17,6 @@ services:
     volumes:
       - app-resource-volume:/app/upload
     environment:
-      - VOICEREADER_API_VERSION=dev version
       - MONGO_URI=mongodb://mongodb:27017/VoiceReader
 
   mongodb:
