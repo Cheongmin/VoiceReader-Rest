@@ -1,6 +1,7 @@
 import time
 import datetime
 import os
+import asyncio
 
 from flask import jsonify, request
 from flask_restplus import Namespace, Resource
@@ -52,9 +53,7 @@ class QuestionList(Resource):
         size = args['size']
         result = []
 
-        records_fetched = mongo.db.questions.find() \
-            .sort("created_date", -1).skip(int(offset)).limit(int(size))
-
+        records_fetched = get_questions(offset, size)
         for record in records_fetched:
             record['writer'] = get_user(record['writer_id'])
             result.append(record)
@@ -116,6 +115,8 @@ class Question(Resource):
 
         record['writer'] = get_user(record['writer_id'])
 
+        asyncio.run(add_read_to_question(question_id, ObjectId(get_jwt_identity())))
+
         return jsonify(record)
 
     @jwt_required
@@ -143,8 +144,38 @@ class Question(Resource):
         return '', 204
 
 
+def get_questions(skip, limit):
+    pipelines = [
+        {"$sort": {"created_date": -1}},
+        {"$skip": int(skip)},
+        {"$limit": int(limit)},
+        {"$addFields": {"num_of_view": {"$size": {"$ifNull": ["$read", []]}}}},
+        {"$addFields": {"num_of_answers": {"$size": {"$ifNull": ["$answers", []]}}}},
+        {"$project": {"answers": 0, "read": 0}}
+    ]
+
+    return mongo.db.questions.aggregate(pipelines)
+
+
 def get_question_by_id(obj_question_id):
-    return mongo.db.questions.find_one({"_id": obj_question_id})
+    pipelines = [
+        {"$match": {"_id": obj_question_id}},
+        {"$addFields": {"num_of_view": {"$size": {"$ifNull": ["$read", []]}}}},
+        {"$addFields": {"num_of_answers": {"$size": {"$ifNull": ["$answers", []]}}}},
+        {"$project": {"answers": 0, "read": 0}}
+    ]
+
+    result = mongo.db.questions.aggregate(pipelines)
+    result = list(result)
+
+    if len(result) == 0:
+        return None
+
+    return result[0]
+
+
+async def add_read_to_question(obj_question_id, obj_user_id):
+    mongo.db.questions.update_one({"_id": obj_question_id}, {"$addToSet": {"read": obj_user_id}})
 
 
 @api.route('/sound/<path:filename>')
