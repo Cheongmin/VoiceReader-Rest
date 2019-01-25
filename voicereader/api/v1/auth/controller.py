@@ -10,7 +10,7 @@ from firebase_admin import auth, initialize_app, credentials
 
 from .schema import access_token_schema, refresh_token_schema
 from .. import errors
-from ..user.controller import get_user_id
+from ..user.controller import get_user, get_user_id
 
 credential = credentials.Certificate('firebase-adminsdk.json')
 firebase_app = initialize_app(credential)
@@ -89,6 +89,35 @@ class Token(Resource):
         return jsonify({
             "type": "Bearer",
             "access_token": access_token,
+            "expire_in": expire_in
+        })
+
+
+debug_get_parser = api.parser()
+debug_get_parser.add_argument('user_id', required=True, help='UserID')
+
+
+class DebugToken(Resource):
+    @api.doc(description='Generate new debug AccessToken by user_id')
+    @api.expect(debug_get_parser)
+    @api.response(200, 'Success', access_token_schema(api))
+    @api.response(404, 'Not registered user id')
+    def get(self):
+        args = debug_get_parser.parse_args()
+        user_id = args['user_id']
+
+        user = get_user(user_id)
+        if not user:
+            raise NotFound(errors.NOT_REGISTERED_USER)
+
+        access_token = create_access_token(user_id, expires_delta=_access_token_expire_delta())
+        refresh_token = create_refresh_token(user_id, expires_delta=_refresh_token_expire_delta())
+        expire_in = _access_token_expire_in()
+
+        return jsonify({
+            "type": "Bearer",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
             "expire_in": expire_in
         })
 

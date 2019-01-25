@@ -27,6 +27,9 @@ post_parser = api.parser()
 post_parser.add_argument('Authorization', location='headers', required=True, help='ID Token from firebase auth')
 
 
+DEFAULT_USER_PHOTO_PATH = '/00/photo/default_user_profile.png'
+
+
 @api.route('')
 class UserList(Resource):
     @api.doc(description='Add new user', parser=post_parser, body=post_user_schema(api), validate=True)
@@ -51,13 +54,14 @@ class UserList(Resource):
 
         json_data = dict()
         json_data['display_name'] = req_payload['display_name']
-        json_data['picture'] = req_payload['picture'] if 'picture' in req_payload else ''
         json_data['_id'] = ObjectId()
         json_data['email'] = decoded_token['email']
         json_data['fcm_uid'] = decoded_token['sub']
         json_data["created_date"] = time.mktime(datetime.datetime.utcnow().timetuple())
-        if json_data['picture'] == '' and 'picture' in decoded_token:
-            json_data['picture'] = decoded_token['picture']
+        if 'picture' in req_payload:
+            json_data['picture'] = req_payload['picture']
+        else:
+            json_data['picture'] = request.base_url + DEFAULT_USER_PHOTO_PATH
 
         try:
             mongo.db.users.insert(json_data)
@@ -181,16 +185,24 @@ class UserPhoto(Resource):
 @api.route('/<user_id>/photo/<path:file_name>')
 @api.doc(False)
 class UserPhotoGet(Resource):
-    @jwt_required
     def get(self, user_id, file_name):
         return file_manager.fetch_file(PHOTO_PREFIX, file_name)
 
 
+class DebugUser(Resource):
+    @api.doc(description='Fetch all users for debug')
+    @api.marshal_list_with(user_schema(api))
+    def get(self):
+        result = []
+
+        for item in mongo.db.users.find():
+            result.append(item)
+
+        return result
+
+
 def get_user(user_id):
-    try:
-        return mongo.db.users.find_one({"_id": ObjectId(user_id)})
-    except Exception as ex:
-        return None
+    return mongo.db.users.find_one({"_id": ObjectId(user_id)})
 
 
 def get_user_id(firebase_uid):

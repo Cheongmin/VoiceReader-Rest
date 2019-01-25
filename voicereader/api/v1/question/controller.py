@@ -1,11 +1,12 @@
 import time
 import datetime
 import os
+import asyncio
 
 from flask import jsonify, request
 from flask_restplus import Namespace, Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.exceptions import BadRequest, NotFound, UnsupportedMediaType
+from werkzeug.exceptions import BadRequest, Forbidden, NotFound, UnsupportedMediaType
 from werkzeug.datastructures import FileStorage
 
 from bson import ObjectId
@@ -29,8 +30,9 @@ get_parser.add_argument('size', default=3, help='size of questions')
 
 post_parser = api.parser()
 post_parser.add_argument('sound', type=FileStorage, location='files', required=True, help='file of sound')
-post_parser.add_argument('subtitles', type=str, location='form', required=True, help='scripts of subtitle')
+post_parser.add_argument('title', type=str, location='form', required=True, help='title of question')
 post_parser.add_argument('contents', type=str, location='form', required=True, help='contents of question')
+post_parser.add_argument('subtitles', type=str, location='form', required=True, help='scripts of subtitle')
 
 SOUND_PREFIX = 'sound/'
 SOUND_ALLOWED_EXTENSIONS = set(['mp3', 'm4a'])
@@ -51,9 +53,7 @@ class QuestionList(Resource):
         size = args['size']
         result = []
 
-        records_fetched = mongo.db.questions.find() \
-            .sort("created_date", -1).skip(int(offset)).limit(int(size))
-
+        records_fetched = get_questions(offset, size)
         for record in records_fetched:
             record['writer'] = get_user(record['writer_id'])
             result.append(record)
@@ -72,6 +72,7 @@ class QuestionList(Resource):
 
         json_data = dict()
         json_data['_id'] = ObjectId()
+        json_data['title'] = args['title']
         json_data['subtitles'] = args['subtitles']
         json_data['contents'] = args['contents']
         json_data["writer_id"] = ObjectId(get_jwt_identity())
@@ -108,11 +109,13 @@ class Question(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        record = mongo.db.questions.find_one({"_id": ObjectId(question_id)})
+        record = get_question_by_id(question_id)
         if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
         record['writer'] = get_user(record['writer_id'])
+
+        asyncio.run(add_read_to_question(question_id, ObjectId(get_jwt_identity())))
 
         return jsonify(record)
 
@@ -121,6 +124,7 @@ class Question(Resource):
     @api.response(204, 'Success')
     @api.response(400, 'Invalid question_id')
     @api.response(401, 'Invalid AccessToken')
+    @api.response(403, 'Not equal between request user_id and writer_id')
     @api.response(404, 'Not exists question')
     def delete(self, question_id):
         try:
@@ -128,13 +132,50 @@ class Question(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        record_deleted = mongo.db.questions.delete_one({"$and": [{"_id": question_id},
-                                                                 {"writer_id": ObjectId(get_jwt_identity())}]})
-
-        if record_deleted.deleted_count <= 0:
+        question = get_question_by_id(question_id)
+        if question is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
+        if str(question['writer_id']) != str(get_jwt_identity()):
+            raise Forbidden(errors.NOT_EQUAL_USER_ID)
+
+        mongo.db.questions.delete_one({"_id": question_id})
+
         return '', 204
+
+
+def get_questions(skip, limit):
+    pipelines = [
+        {"$sort": {"created_date": -1}},
+        {"$skip": int(skip)},
+        {"$limit": int(limit)},
+        {"$addFields": {"num_of_view": {"$size": {"$ifNull": ["$read", []]}}}},
+        {"$addFields": {"num_of_answers": {"$size": {"$ifNull": ["$answers", []]}}}},
+        {"$project": {"answers": 0, "read": 0}}
+    ]
+
+    return mongo.db.questions.aggregate(pipelines)
+
+
+def get_question_by_id(obj_question_id):
+    pipelines = [
+        {"$match": {"_id": obj_question_id}},
+        {"$addFields": {"num_of_view": {"$size": {"$ifNull": ["$read", []]}}}},
+        {"$addFields": {"num_of_answers": {"$size": {"$ifNull": ["$answers", []]}}}},
+        {"$project": {"answers": 0, "read": 0}}
+    ]
+
+    result = mongo.db.questions.aggregate(pipelines)
+    result = list(result)
+
+    if len(result) == 0:
+        return None
+
+    return result[0]
+
+
+async def add_read_to_question(obj_question_id, obj_user_id):
+    mongo.db.questions.update_one({"_id": obj_question_id}, {"$addToSet": {"read": obj_user_id}})
 
 
 @api.route('/sound/<path:filename>')
