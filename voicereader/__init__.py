@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_pymongo import PyMongo
@@ -26,8 +28,8 @@ def configure_app(app):
 
     app.config.from_json('../config.json')
     app.config.from_json('../config.{}.json'.format(app.config['ENV']), True)
-    app.config.from_envvar('MONGO_URI', True)
-    app.config.from_envvar('VOICEREADER_API_VERSION', True)
+    app.config['MONGO_URI'] = os.getenv('MONGO_URI', app.config['MONGO_URI'])
+    app.config['VOICEREADER_API_VERSION'] = os.getenv('VOICEREADER_API_VERSION', app.config['VOICEREADER_API_VERSION'])
 
     app.json_encoder = JSONEncoder
 
