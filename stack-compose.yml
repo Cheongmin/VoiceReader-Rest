@@ -30,6 +30,8 @@ services:
       - apinet
     depends_on:
       - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/VoiceReader
   visualizer:
     image: dockersamples/visualizer:stable
     ports:
