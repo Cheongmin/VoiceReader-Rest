@@ -8,7 +8,7 @@ def test_allowed_file():
 
     actual = allowed_file(allowed_filename, allowed_extensions)
 
-    assert actual == expected
+    assert expected == actual
 
 
 def test_not_allowed_file():
@@ -18,4 +18,4 @@ def test_not_allowed_file():
 
     actual = allowed_file(not_allowed_filename, allowed_extensions)
 
-    assert actual == expected
+    assert expected == actual
