@@ -38,7 +38,7 @@ class LocalStorageTests(TestCase):
         if not os.path.exists(upload_path):
             os.makedirs(upload_path)
 
-        with open('tests/testdata/' + filename) as fp:
+        with open('tests/testdata/' + filename, 'rb') as fp:
             file = FileStorage(fp, filename=filename)
 
             self.local_uploader.upload_file(file)
@@ -62,12 +62,13 @@ class LocalStorageTests(TestCase):
 
         self.local_uploader.upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
 
-        os.makedirs('upload/')
+        os.makedirs(upload_path)
         copy('tests/testdata/' + filename, upload_path)
 
-        file = self.local_uploader.fetch_file(filename)
+        binary_file = self.local_uploader.fetch_file(filename)
 
-        assert file.filename == filename
+        with open('tests/testdata/' + filename, 'rb') as src:
+            assert src.read() == binary_file
 
     # def test_fetch_file_not_exists_file(self):
     #     pass
