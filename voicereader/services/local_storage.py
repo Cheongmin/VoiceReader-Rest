@@ -10,18 +10,21 @@ class LocalStorage:
         if not os.path.exists(self.upload_path):
             os.makedirs(self.upload_path)
 
-    def fetch_file(self, file_name):
+    def fetch_file(self, resource, filename):
         if self.upload_path is None:
             raise TypeError(self.upload_path)
 
-        return open(os.path.join(self.upload_path, file_name), 'rb').read()
+        return open(os.path.join(self.upload_path, resource, filename), 'rb').read()
         # return send_from_directory(os.path.abspath(self.upload_path), file_name)
 
-    def upload_file(self, file, acl="public-read"):
+    def upload_file(self, resource, file, acl="public-read"):
         if self.upload_path is None:
             raise TypeError(self.upload_path)
 
         if file is None:
             raise ValueError(file)
 
-        file.save(os.path.join(self.upload_path, file.filename))
+        path = os.path.join(self.upload_path, resource, file.filename)
+
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        file.save(path)

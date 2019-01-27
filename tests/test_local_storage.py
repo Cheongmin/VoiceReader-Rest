@@ -19,33 +19,25 @@ class LocalStorageTests(TestCase):
     def tearDown(self):
         upload_path = self.app.config.get('RESOURCE_UPLOAD_PATH')
 
-        if upload_path is not None:
+        if upload_path is not None and os.path.exists(upload_path):
             rmtree(upload_path)
 
-    def test_init_app_ensure_mkdir(self):
-        self.app.config['RESOURCE_UPLOAD_PATH'] = 'upload/'
-
-        self.local_uploader.init_app(self.app)
-
-        assert os.path.exists(self.app.config['RESOURCE_UPLOAD_PATH'])
-
     def test_upload_file_ensure_save(self):
+        resource = 'test-resource'
         filename = 'input.txt'
         upload_path = 'upload/'
 
         self.local_uploader.upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
 
-        if not os.path.exists(upload_path):
-            os.makedirs(upload_path)
-
         with open('tests/testdata/' + filename, 'rb') as fp:
             file = FileStorage(fp, filename=filename)
 
-            self.local_uploader.upload_file(file)
+            self.local_uploader.upload_file(resource, file)
 
-            assert os.path.exists(os.path.join(upload_path, filename))
+            assert os.path.exists(os.path.join(upload_path, resource, filename))
 
     def test_upload_file_none_file(self):
+        resource = 'test-resource'
         upload_path = 'upload/'
 
         self.local_uploader.upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
@@ -54,38 +46,39 @@ class LocalStorageTests(TestCase):
             os.makedirs(upload_path)
 
         with self.assertRaises(ValueError):
-            self.local_uploader.upload_file(None)
+            self.local_uploader.upload_file(resource, None)
 
     def test_fetch_file_exists_file(self):
+        resource = 'test-resource'
         filename = 'input.txt'
         upload_path = 'upload/'
 
         self.local_uploader.upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
 
-        os.makedirs(upload_path)
-        copy('tests/testdata/' + filename, upload_path)
+        os.makedirs(os.path.join(upload_path, resource))
+        copy('tests/testdata/' + filename, os.path.join(upload_path, resource))
 
-        binary_file = self.local_uploader.fetch_file(filename)
+        binary_file = self.local_uploader.fetch_file(resource, filename)
 
         with open('tests/testdata/' + filename, 'rb') as src:
             assert src.read() == binary_file
 
     def test_fetch_file_not_initialized(self):
+        resource = 'test-resource'
         filename = 'input.txt'
 
         with self.assertRaises(TypeError):
-            self.local_uploader.fetch_file(filename)
+            self.local_uploader.fetch_file(resource, filename)
 
     def test_fetch_file_not_exists_file(self):
+        resource = 'test-resource'
         filename = 'NOT_EXISTS_FILE'
         upload_path = 'upload'
 
         self.local_uploader.upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
 
-        os.makedirs(upload_path)
-
         with self.assertRaises(FileNotFoundError):
-            self.local_uploader.fetch_file(filename)
+            self.local_uploader.fetch_file(resource, filename)
 
 
 
