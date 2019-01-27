@@ -15,4 +15,7 @@ class LocalUploader:
         return send_from_directory(os.path.abspath(self.upload_path), file_name)
 
     def upload_file(self, file, acl="public-read"):
+        if file is None:
+            raise TypeError()
+
         file.save(os.path.join(self.upload_path, file.filename))
