@@ -2,7 +2,7 @@ import os
 from flask import send_from_directory
 
 
-class LocalUploader:
+class LocalStorage:
     upload_path = ''
 
     def init_app(self, app):

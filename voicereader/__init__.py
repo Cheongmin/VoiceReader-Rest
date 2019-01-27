@@ -4,11 +4,11 @@ from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_pymongo import PyMongo
 
-from .services.s3_uploader import S3Uploader
+from .services.s3_storage import S3Storage
 
 jwt = JWTManager()
 mongo = PyMongo()
-file_manager = S3Uploader()
+file_storage = S3Storage()
 
 
 def create_app():
@@ -35,7 +35,7 @@ def configure_app(app):
 
 
 def configure_service(app):
-    file_manager.init_app(app)
+    file_storage.init_app(app)
 
     from pymongo import TEXT
 

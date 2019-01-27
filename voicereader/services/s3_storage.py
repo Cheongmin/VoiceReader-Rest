@@ -2,7 +2,7 @@ import boto3
 from flask import make_response
 
 
-class S3Uploader:
+class S3Storage:
     s3 = None
     bucket_name = None
 

@@ -4,17 +4,17 @@ from flask import Flask
 
 from unittest import TestCase
 from werkzeug.datastructures import FileStorage
-from voicereader.services.local_uploader import LocalUploader
-from shutil import rmtree
+from voicereader.services.local_storage import LocalStorage
+from shutil import rmtree, copy
 
 
-class LocalUploaderTests(TestCase):
+class LocalStorageTests(TestCase):
     def setUp(self):
         app = Flask(__name__)
         app.config['TESTING'] = True
 
         self.app = app
-        self.local_uploader = LocalUploader()
+        self.local_uploader = LocalStorage()
 
     def tearDown(self):
         upload_path = self.app.config.get('RESOURCE_UPLOAD_PATH')
@@ -55,6 +55,22 @@ class LocalUploaderTests(TestCase):
 
         with self.assertRaises(TypeError):
             self.local_uploader.upload_file(None)
+
+    def test_fetch_file_exists_file(self):
+        filename = 'input.txt'
+        upload_path = 'upload/'
+
+        self.local_uploader.upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
+
+        os.makedirs('upload/')
+        copy('tests/testdata/' + filename, upload_path)
+
+        file = self.local_uploader.fetch_file(filename)
+
+        assert file.filename == filename
+
+    # def test_fetch_file_not_exists_file(self):
+    #     pass
 
 
 
