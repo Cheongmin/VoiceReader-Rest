@@ -3,10 +3,11 @@ from flask import send_from_directory
 
 
 class LocalUploader:
-    def __init__(self, upload_path):
-        self.upload_path = upload_path
+    upload_path = ''
 
     def init_app(self, app):
+        self.upload_path = app.config['RESOURCE_UPLOAD_PATH']
+
         if not os.path.exists(self.upload_path):
             os.makedirs(self.upload_path)
 
