@@ -45,14 +45,30 @@ class LocalStorageTests(TestCase):
 
             assert os.path.exists(os.path.join(upload_path, resource, filename))
 
+    def test_upload_file_not_initialized(self):
+        with open('tests/testdata/input.txt', 'rb') as fp:
+            file = FileStorage(fp)
+
+            with self.assertRaises(TypeError):
+                self.storage.upload_file("EXISTS_RESOURCE", file)
+
+    def test_upload_file_none_resource(self):
+        filename = 'input.txt'
+        upload_path = 'upload/'
+
+        self.storage._upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
+
+        with open('tests/testdata/' + filename, 'rb') as fp:
+            file = FileStorage(fp, filename=filename)
+
+            with self.assertRaises(ValueError):
+                self.storage.upload_file(None, file)
+
     def test_upload_file_none_file(self):
         resource = 'test-resource'
         upload_path = 'upload/'
 
         self.storage._upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
-
-        if not os.path.exists(upload_path):
-            os.makedirs(upload_path)
 
         with self.assertRaises(ValueError):
             self.storage.upload_file(resource, None)
@@ -72,6 +88,16 @@ class LocalStorageTests(TestCase):
         with open('tests/testdata/' + filename, 'rb') as src:
             assert src.read() == binary_file
 
+    def test_fetch_file_not_exists_file(self):
+        resource = 'test-resource'
+        filename = 'NOT_EXISTS_FILE'
+        upload_path = 'upload/'
+
+        self.storage._upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
+
+        with self.assertRaises(FileNotFoundError):
+            self.storage.fetch_file(resource, filename)
+
     def test_fetch_file_not_initialized(self):
         resource = 'test-resource'
         filename = 'input.txt'
@@ -79,15 +105,17 @@ class LocalStorageTests(TestCase):
         with self.assertRaises(TypeError):
             self.storage.fetch_file(resource, filename)
 
-    def test_fetch_file_not_exists_file(self):
-        resource = 'test-resource'
-        filename = 'NOT_EXISTS_FILE'
-        upload_path = 'upload'
+    def test_fetch_file_none_resource(self):
+        self.storage._upload_path = 'upload/'
 
-        self.storage._upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
+        with self.assertRaises(ValueError):
+            self.storage.fetch_file(None, 'EXISTS_FILE_NAME')
 
-        with self.assertRaises(FileNotFoundError):
-            self.storage.fetch_file(resource, filename)
+    def test_fetch_file_none_filename(self):
+        self.storage._upload_path = 'upload/'
+
+        with self.assertRaises(ValueError):
+            self.storage.fetch_file('EXISTS_RESOURCE', None)
 
 
 
