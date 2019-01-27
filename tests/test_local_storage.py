@@ -70,8 +70,17 @@ class LocalStorageTests(TestCase):
         with open('tests/testdata/' + filename, 'rb') as src:
             assert src.read() == binary_file
 
-    # def test_fetch_file_not_exists_file(self):
-    #     pass
+    def test_fetch_file_not_exists_file(self):
+        filename = 'NOT_EXISTS_FILE'
+        upload_path = 'upload'
+
+        self.local_uploader.upload_path = self.app.config['RESOURCE_UPLOAD_PATH'] = upload_path
+
+        os.makedirs(upload_path)
+
+        with self.assertRaises(FileNotFoundError):
+            self.local_uploader.fetch_file(filename)
+
 
 
 
