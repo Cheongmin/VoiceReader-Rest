@@ -53,7 +53,7 @@ class LocalStorageTests(TestCase):
         if not os.path.exists(upload_path):
             os.makedirs(upload_path)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             self.local_uploader.upload_file(None)
 
     def test_fetch_file_exists_file(self):
@@ -69,6 +69,12 @@ class LocalStorageTests(TestCase):
 
         with open('tests/testdata/' + filename, 'rb') as src:
             assert src.read() == binary_file
+
+    def test_fetch_file_not_initialized(self):
+        filename = 'input.txt'
+
+        with self.assertRaises(TypeError):
+            self.local_uploader.fetch_file(filename)
 
     def test_fetch_file_not_exists_file(self):
         filename = 'NOT_EXISTS_FILE'
