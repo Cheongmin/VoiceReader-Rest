@@ -18,7 +18,7 @@ def app():
 
 
 @pytest.fixture(scope='module')
-def flask_client(app):
+def app_client(app):
     return app.test_client()
 
 
@@ -27,5 +27,11 @@ def flask_app():
     flask = Flask(__name__)
     flask.config['TESTING'] = True
     flask.config['ENV'] = 'testing'
+    flask.config['VOICEREADER_API_VERSION'] = 'testing version'
 
     return flask
+
+
+@pytest.fixture(scope='function')
+def flask_client(flask_app):
+    return flask_app.test_client()
