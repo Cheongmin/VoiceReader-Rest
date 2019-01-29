@@ -7,11 +7,11 @@ default_envs = {
 
 
 def load_config(app, root='../', envs=default_envs):
-    load_config_from_json(app, root)
-    load_config_from_env(app, envs)
+    _load_config_from_json(app, root)
+    _load_config_from_env(app, envs)
 
 
-def load_config_from_json(app, root='../'):
+def _load_config_from_json(app, root='../'):
     if not app:
         raise ValueError(app)
 
@@ -22,7 +22,7 @@ def load_config_from_json(app, root='../'):
     app.config.from_json(os.path.join(root, 'config.{}.json'.format(app.config['ENV'])), True)
 
 
-def load_config_from_env(app, envs):
+def _load_config_from_env(app, envs):
     if not app:
         raise ValueError(app)
 
