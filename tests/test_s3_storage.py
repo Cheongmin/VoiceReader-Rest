@@ -4,15 +4,6 @@ import io
 
 from werkzeug.datastructures import FileStorage
 from voicereader.services.s3_storage import S3Storage
-from flask import Flask
-
-
-@pytest.fixture(scope='function')
-def flask_app():
-    flask_app = Flask(__name__)
-    flask_app.config['TESTING'] = True
-
-    return flask_app
 
 
 @pytest.fixture(scope='session')

@@ -1,17 +1,31 @@
 import pytest
 
 from voicereader import create_app
+from flask import Flask
 
 
 @pytest.fixture(scope='module')
-def test_client():
-    flask_app = create_app()
+def app():
+    app = create_app()
+    app.config['TESTING'] = True
 
-    test_client = flask_app.test_client()
+    app_context = app.app_context()
+    app_context.push()
 
-    ctx = flask_app.app_context()
-    ctx.push()
+    yield app
 
-    yield test_client
+    app_context.pop()
 
-    ctx.pop()
+
+@pytest.fixture(scope='module')
+def flask_client(app):
+    return app.test_client()
+
+
+@pytest.fixture(scope='function')
+def flask_app():
+    flask = Flask(__name__)
+    flask.config['TESTING'] = True
+    flask.config['ENV'] = 'testing'
+
+    return flask

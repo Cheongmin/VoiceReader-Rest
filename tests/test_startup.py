@@ -1,17 +1,7 @@
 import os
 import pytest
 
-from flask import Flask
 from voicereader import startup
-
-
-@pytest.fixture(scope='function')
-def flask_app():
-    flask = Flask(__name__)
-    flask.config['TESTING'] = True
-    flask.config['ENV'] = 'testing'
-
-    return flask
 
 
 @pytest.fixture
