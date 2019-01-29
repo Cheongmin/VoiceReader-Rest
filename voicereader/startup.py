@@ -1,6 +1,16 @@
 import os
 
 
+default_envs = {
+
+}
+
+
+def load_config(app, root='../', envs=default_envs):
+    load_config_from_json(app, root)
+    load_config_from_env(app, envs)
+
+
 def load_config_from_json(app, root='../'):
     if not app:
         raise ValueError(app)
