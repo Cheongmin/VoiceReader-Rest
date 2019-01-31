@@ -97,7 +97,9 @@ def test_load_config_from_env_none_envs(flask_app):
         startup._load_config_from_env(flask_app, None)
 
 
-def test_configure_middleware(flask_app):
+def test_configure_middleware(monkeypatch, flask_app):
+    monkeypatch.setattr(startup, 'configure_middleware', lambda app: None)
+
     startup.configure_middleware(flask_app)
 
 
