@@ -2,8 +2,22 @@ import os
 
 
 default_envs = {
-    "MONGO_URI",
     "VOICEREADER_API_VERSION",
+
+    "MONGO_URI",
+
+    "JWT_SECRET_KEY",
+    "JWT_ACCESS_TOKEN_EXPIRES_SEC",
+    "JWT_REFRESH_TOKEN_EXPIRES_SEC",
+    "JWT_IDENTITY_CLAIM",
+    "JWT_ERROR_MESSAGE_KEY",
+
+    "S3_BUCKET_NAME",
+    "S3_REGION",
+    "S3_KEY",
+    "S3_SECRET",
+
+    "FIREBASE_CONFIG_PATH",
 }
 
 
