@@ -20,6 +20,14 @@ def test_envs():
         os.environ.pop(k)
 
 
+def test_configure_app(flask_app):
+    from voicereader.extensions.json_encoder import JSONEncoder
+
+    startup.configure_app(flask_app)
+
+    assert type(flask_app.json_encoder) == type(JSONEncoder)
+
+
 def test_load_config(flask_app, test_envs):
     startup.load_config(flask_app, 'testdata/config', test_envs)
 
@@ -87,3 +95,16 @@ def test_load_config_from_env_none_app(test_envs):
 def test_load_config_from_env_none_envs(flask_app):
     with pytest.raises(ValueError):
         startup._load_config_from_env(flask_app, None)
+
+
+def test_configure_middleware(flask_app):
+    startup.configure_middleware(flask_app)
+
+
+def test_register_blueprints(flask_app, flask_client):
+    startup.register_blueprints(flask_app)
+
+    res = flask_client.get('api/ping')
+
+    assert res.status_code == 200
+    assert res.get_data() == b'pong'
