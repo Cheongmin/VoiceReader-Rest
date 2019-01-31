@@ -55,10 +55,8 @@ def configure_middleware(app):
 
 
 def register_blueprints(app):
-    # from voicereader.api.v1 import create_api_v1
     from voicereader.api_v1.blueprint import blueprint as api_v1
     from voicereader.api_common.controller import blueprint as api_common
 
     app.register_blueprint(api_v1)
     app.register_blueprint(api_common)
-    # app.register_blueprint(create_api_v1(None))
