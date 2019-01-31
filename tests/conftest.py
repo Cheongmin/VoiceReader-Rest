@@ -1,12 +1,12 @@
 import pytest
 
-from voicereader import create_app
+from voicereader import application
 from flask import Flask
 
 
 @pytest.fixture(scope='module')
 def app():
-    app = create_app()
+    app = application.create()
     app.config['TESTING'] = True
 
     app_context = app.app_context()

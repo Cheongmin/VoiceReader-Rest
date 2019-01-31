@@ -1,5 +1,5 @@
-from voicereader import create_app
+from voicereader import application
 
 if __name__ == '__main__':
-    app = create_app()
+    app = application.create()
     app.run(host='0.0.0.0')
