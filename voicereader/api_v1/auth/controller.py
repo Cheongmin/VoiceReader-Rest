@@ -9,8 +9,9 @@ from werkzeug.exceptions import NotFound, Unauthorized
 from firebase_admin import auth, initialize_app, credentials
 
 from .schema import access_token_schema, refresh_token_schema
-from .. import errors
 from ..user.controller import get_user, get_user_id
+
+from voicereader.extensions import errors
 
 credential = credentials.Certificate('firebase-adminsdk.json')
 firebase_app = initialize_app(credential)

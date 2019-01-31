@@ -16,10 +16,12 @@ from bson import ObjectId
 from firebase_admin import auth
 from ast import literal_eval
 
-from voicereader import mongo, file_storage
-from voicereader.extensions.media import allowed_file
 from .schema import post_user_schema, user_schema
-from .. import errors
+from ..middlewares import storage
+
+from voicereader.services.db import mongo
+from voicereader.extensions import errors
+from voicereader.extensions.media import allowed_file
 
 api = Namespace('User API', description='Users related operation')
 
@@ -175,7 +177,7 @@ class UserPhoto(Resource):
         if record_updated.matched_count == 0:
             return NotFound(errors.NOT_EXISTS_DATA)
 
-        file_storage.upload_file(PHOTO_PREFIX, photo_file)
+        storage.upload_file(PHOTO_PREFIX, photo_file)
 
         return jsonify({
             "picture": photo_url
@@ -186,7 +188,7 @@ class UserPhoto(Resource):
 @api.doc(False)
 class UserPhotoGet(Resource):
     def get(self, user_id, file_name):
-        return file_storage.fetch_file(PHOTO_PREFIX, file_name)
+        return storage.fetch_file(PHOTO_PREFIX, file_name)
 
 
 class DebugUser(Resource):

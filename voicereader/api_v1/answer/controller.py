@@ -12,10 +12,10 @@ from bson.errors import InvalidId
 
 from ast import literal_eval
 
-from voicereader import mongo
+from voicereader.services.db import mongo
+from voicereader.extensions import errors
 
 from .schema import answer_schema, answer_with_writer_schema, post_answer_schema
-from .. import errors
 from ..user.controller import get_user
 
 api = Namespace('Answer about Question API', description='Answers related operation')
