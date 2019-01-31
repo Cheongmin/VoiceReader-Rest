@@ -56,7 +56,7 @@ class AnswerList(Resource):
     @jwt_required
     @api.doc(description='Add new answer', )
     @api.expect(post_answer_schema(api), validate=True)
-    @api.marshal_with(answer_schema(api), code=201)
+    @api.marshal_with(answer_with_writer_schema(api), code=201)
     @api.response(400, 'Invalid question_id or request payload')
     @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists question')
@@ -81,6 +81,8 @@ class AnswerList(Resource):
 
         if records_updated.modified_count <= 0:
             raise NotFound(errors.NOT_EXISTS_DATA)
+
+        body['writer'] = get_user(ObjectId(get_jwt_identity()))
 
         return body, 201
 

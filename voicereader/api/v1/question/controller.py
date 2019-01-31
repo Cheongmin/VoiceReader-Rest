@@ -63,7 +63,7 @@ class QuestionList(Resource):
     @jwt_required
     @api.doc(description='Add new question')
     @api.expect(post_parser)
-    @api.marshal_with(question_schema(api), code=201)
+    @api.marshal_with(question_with_writer_schema(api), code=201)
     @api.response(400, 'Invalid form data')
     @api.response(401, 'Invalid AccessToken')
     @api.response(415, 'Unsupport media type only mp3, m4a')
@@ -90,6 +90,8 @@ class QuestionList(Resource):
         file_manager.upload_file(SOUND_PREFIX, sound_file)
 
         mongo.db.questions.insert(json_data)
+
+        json_data['writer'] = get_user(ObjectId(get_jwt_identity()))
 
         return json_data, 201
 
