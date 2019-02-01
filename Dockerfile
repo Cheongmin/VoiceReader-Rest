@@ -1,8 +1,5 @@
 FROM alpine:3.7
 
-ARG APP_VERSION
-ENV VOICEREADER_API_VERSION $APP_VERSION
-
 COPY ./voicereader /app/voicereader
 COPY config.json /app
 COPY config.production.json /app
