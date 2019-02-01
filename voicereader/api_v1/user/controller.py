@@ -191,6 +191,7 @@ class UserPhotoGet(Resource):
         return storage.fetch_file(PHOTO_PREFIX, file_name)
 
 
+@api.route('/debug')
 class DebugUser(Resource):
     @api.doc(description='Fetch all users for debug')
     @api.marshal_list_with(user_schema(api))

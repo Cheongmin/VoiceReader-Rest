@@ -98,6 +98,7 @@ debug_get_parser = api.parser()
 debug_get_parser.add_argument('user_id', required=True, help='UserID')
 
 
+@api.route('/token/debug')
 class DebugToken(Resource):
     @api.doc(description='Generate new debug AccessToken by user_id')
     @api.expect(debug_get_parser)
