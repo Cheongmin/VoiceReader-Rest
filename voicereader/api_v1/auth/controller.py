@@ -112,15 +112,8 @@ class DebugToken(Resource):
         if not user:
             raise NotFound(errors.NOT_REGISTERED_USER)
 
-        access_token = create_access_token(user_id, expires_delta=_access_token_expire_delta())
-        refresh_token = create_refresh_token(user_id, expires_delta=_refresh_token_expire_delta())
-        expire_in = _access_token_expire_in()
-
         return jsonify({
-            "type": "Bearer",
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "expire_in": expire_in
+            "access_token": create_access_token(user_id, expires_delta=_access_token_expire_delta()),
         })
 
 
