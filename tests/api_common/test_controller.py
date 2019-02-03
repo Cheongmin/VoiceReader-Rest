@@ -37,6 +37,16 @@ def test_get_version(flask_app, flask_client):
     assert res.get_data() == b'testing version'
 
 
+def test_get_version_exists_version(flask_app, flask_client):
+    flask_app.config['VERSION_PATH'] = 'tests/testdata/VERSION'
+    flask_app.register_blueprint(blueprint)
+
+    res = flask_client.get('/api/info/version')
+
+    assert res.status_code == 200
+    assert res.get_data() == b'v0.0.0'
+
+
 def test_get_env(flask_app, flask_client):
     flask_app.register_blueprint(blueprint)
 

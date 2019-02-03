@@ -27,7 +27,7 @@ def flask_app():
     flask = Flask(__name__)
     flask.config['TESTING'] = True
     flask.config['ENV'] = 'testing'
-    flask.config['VOICEREADER_API_VERSION'] = 'testing version'
+    flask.config['VOICEREADER_API_DEV_VERSION'] = 'testing version'
 
     return flask
 

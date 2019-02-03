@@ -14,5 +14,3 @@ api.add_namespace(auth_namespace, path='/oauth2')
 api.add_namespace(user_namespace, path='/users')
 api.add_namespace(question_namespace, path='/questions')
 api.add_namespace(answer_namespace, path='/questions')
-
-# jwt._set_error_handler_callbacks(api)
