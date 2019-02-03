@@ -3,7 +3,7 @@
 
 
 # Create VERSION file for application versioning
-echo $(TRAVIS_TAG) > VERSION
+echo ${TRAVIS_TAG} > VERSION
 
 # Image build and deploy to Dockerhub
 bash scripts/dockerhub-deploy.sh
