@@ -42,7 +42,7 @@ def test_access_token_expire_in(flask_app):
         assert expected_expire_in == controller._access_token_expire_in()
 
 
-def test_refresh_token_expire_in(flask_app):
+def test_refresh_token_expire_delta(flask_app):
     flask_app.config['JWT_REFRESH_TOKEN_EXPIRES_SEC'] = 3600
 
     with flask_app.app_context():
