@@ -186,5 +186,5 @@ async def add_read_to_question(obj_question_id, obj_user_id):
 class QuestionSound(Resource):
     # @jwt_required
     def get(self, filename):
-        return storage.fetch_file(SOUND_PREFIX, filename, as_attachment=True)
+        return storage.fetch_file(SOUND_PREFIX, filename)
 

@@ -33,12 +33,6 @@ class S3Storage:
         file = self._s3.get_object(Bucket=self._bucket_name, Key=key)
 
         return file['Body'].read()
-        #response.headers['Content-Type'] = file['ContentType']
-
-        #if as_attachment:
-            #response.headers['Content-Disposition'] = 'attachment'
-
-        #return response
 
     def upload_file(self, resource, file):
         if self._s3 is None:
