@@ -85,7 +85,7 @@ class AnswerList(Resource):
         return body, 201
 
 
-@api.route('/<question_id>/<answer_id>')
+@api.route('/<question_id>/answers/<answer_id>')
 @api.expect(common_parser)
 class Answer(Resource):
     @jwt_required
