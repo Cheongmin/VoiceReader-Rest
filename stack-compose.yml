@@ -31,7 +31,6 @@ services:
     depends_on:
       - mongodb
     environment:
-      - VOICEREADER_API_VERSION
       - MONGO_URI=mongodb://mongodb:27017/VoiceReader
   visualizer:
     image: dockersamples/visualizer:stable
