@@ -16,7 +16,7 @@ from voicereader.services.db import mongo
 from voicereader.extensions import errors
 from voicereader.extensions.media import allowed_file
 
-from .schema import question_schema, question_with_writer_schema
+from .schema import question_with_writer_schema
 from ..middlewares import storage
 from ..user.controller import get_user
 
