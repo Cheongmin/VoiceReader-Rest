@@ -287,13 +287,17 @@ def test_get_questions(monkeypatch):
     class MockDb:
         class MockQuestions:
             def aggregate(self):
-                return {}
+                return [
+                    {'_id': 'VALID_QUESTION_ID'}
+                ]
 
         questions = MockQuestions
 
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
 
     result = controller.get_questions(0, 3)
+
+    assert result
 
 
 def test_get_question_by_id(monkeypatch):
