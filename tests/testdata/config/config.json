@@ -1,0 +1,3 @@
+{
+  "JWT_IDENTITY_CLAIM": "sub"
+}

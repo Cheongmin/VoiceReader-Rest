@@ -15,4 +15,4 @@ RUN apk add -U --no-cache gcc build-base \
 
 EXPOSE 5000
 
-CMD [ "gunicorn", "--bind", "0.0.0.0:5000", "voicereader:create_app()" ]
+CMD [ "gunicorn", "--bind", "0.0.0.0:5000", "voicereader.application:create()" ]

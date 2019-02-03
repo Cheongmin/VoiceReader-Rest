@@ -9,8 +9,9 @@ from werkzeug.exceptions import NotFound, Unauthorized
 from firebase_admin import auth, initialize_app, credentials
 
 from .schema import access_token_schema, refresh_token_schema
-from .. import errors
 from ..user.controller import get_user, get_user_id
+
+from voicereader.extensions import errors
 
 credential = credentials.Certificate('firebase-adminsdk.json')
 firebase_app = initialize_app(credential)
@@ -97,6 +98,7 @@ debug_get_parser = api.parser()
 debug_get_parser.add_argument('user_id', required=True, help='UserID')
 
 
+@api.route('/token/debug')
 class DebugToken(Resource):
     @api.doc(description='Generate new debug AccessToken by user_id')
     @api.expect(debug_get_parser)
@@ -110,15 +112,8 @@ class DebugToken(Resource):
         if not user:
             raise NotFound(errors.NOT_REGISTERED_USER)
 
-        access_token = create_access_token(user_id, expires_delta=_access_token_expire_delta())
-        refresh_token = create_refresh_token(user_id, expires_delta=_refresh_token_expire_delta())
-        expire_in = _access_token_expire_in()
-
         return jsonify({
-            "type": "Bearer",
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "expire_in": expire_in
+            "access_token": create_access_token(user_id, expires_delta=_access_token_expire_delta()),
         })
 
 
