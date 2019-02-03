@@ -25,7 +25,7 @@ def test_configure_app(flask_app):
 
     startup.configure_app(flask_app)
 
-    assert type(flask_app.json_encoder) == type(JSONEncoder)
+    assert isinstance(flask_app.json_encoder, type(JSONEncoder))
 
 
 def test_load_config(flask_app, test_envs):

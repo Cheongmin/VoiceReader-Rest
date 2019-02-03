@@ -48,7 +48,7 @@ def test_init_app(monkeypatch, storage, flask_app):
 def test_fetch_file(storage, mock_boto_client):
     binary = storage.fetch_file('EXISTS_RESOURCE', 'FILE_NAME')
 
-    assert type(binary) == bytes
+    assert isinstance(binary, bytes)
 
 
 def test_fetch_file_none_s3(monkeypatch, storage):
