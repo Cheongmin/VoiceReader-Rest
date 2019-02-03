@@ -4,6 +4,8 @@ COPY ./voicereader /app/voicereader
 COPY config.json /app
 COPY config.production.json /app
 COPY firebase-adminsdk.json /app
+COPY VERSION /app
+
 WORKDIR /app
 
 RUN apk add -U --no-cache gcc build-base \
