@@ -19,3 +19,6 @@ class Jwt:
             return jsonify({
                 error_message_key: error_string
             }), 401
+
+    def init_api(self, api):
+        self._jwt_manager._set_error_handler_callbacks(api)
