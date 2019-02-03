@@ -16,10 +16,12 @@ from bson import ObjectId
 from firebase_admin import auth
 from ast import literal_eval
 
-from voicereader import mongo, file_manager
-from voicereader.extensions.media import allowed_file
 from .schema import post_user_schema, user_schema
-from .. import errors
+from ..middlewares import storage
+
+from voicereader.services.db import mongo
+from voicereader.extensions import errors
+from voicereader.extensions.media import allowed_file
 
 api = Namespace('User API', description='Users related operation')
 
@@ -111,11 +113,11 @@ class User(Resource):
         try:
             body = literal_eval(json.dumps({"$set": request.get_json()}))
         except ValueError:
-            return BadRequest(errors.INVALID_PAYLOAD)
+            raise BadRequest(errors.INVALID_PAYLOAD)
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, body)
         if record_updated.matched_count == 0:
-            return NotFound(errors.NOT_EXISTS_DATA)
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         return jsonify(body['$set'])
 
@@ -164,7 +166,7 @@ class UserPhoto(Resource):
         photo_file.filename = user_id + extension
 
         if not allowed_file(photo_file.filename, PHOTO_ALLOWED_EXTENSIONS):
-            return UnsupportedMediaType(errors.UNSUPPORT_MEDIA_TYPE)
+            raise UnsupportedMediaType(errors.UNSUPPORT_MEDIA_TYPE)
 
         photo_url = os.path.join(request.url, photo_file.filename)
         query = {"$set": {
@@ -173,9 +175,9 @@ class UserPhoto(Resource):
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, query)
         if record_updated.matched_count == 0:
-            return NotFound(errors.NOT_EXISTS_DATA)
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
-        file_manager.upload_file(PHOTO_PREFIX, photo_file)
+        storage.upload_file(PHOTO_PREFIX, photo_file)
 
         return jsonify({
             "picture": photo_url
@@ -186,9 +188,10 @@ class UserPhoto(Resource):
 @api.doc(False)
 class UserPhotoGet(Resource):
     def get(self, user_id, file_name):
-        return file_manager.fetch_file(PHOTO_PREFIX, file_name)
+        return storage.fetch_file(PHOTO_PREFIX, file_name)
 
 
+@api.route('/debug')
 class DebugUser(Resource):
     @api.doc(description='Fetch all users for debug')
     @api.marshal_list_with(user_schema(api))
