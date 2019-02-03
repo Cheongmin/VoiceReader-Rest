@@ -7,7 +7,6 @@ def create():
 
     startup.load_config(app)
     startup.configure_app(app)
-    startup.configure_middleware(app)
-    startup.register_blueprints(app)
+    startup.register_resources(app)
 
     return app

@@ -77,8 +77,12 @@ def register_blueprints(app):
 
 
 def register_resources(app):
-    resources = [
+    from .api_common import resource as common_resource
+    from .api_v1 import resource as v1_resource
 
+    resources = [
+        common_resource,
+        v1_resource,
     ]
 
     for resource in resources:

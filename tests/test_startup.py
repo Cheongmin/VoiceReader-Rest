@@ -112,7 +112,10 @@ def test_register_blueprints(flask_app, flask_client):
     assert res.get_data() == b'pong'
 
 
-def test_register_resources(flask_app, flask_client):
+def test_register_resources(monkeypatch, flask_app, flask_client):
+    monkeypatch.setattr('voicereader.api_v1.middlewares.init_app', lambda app: None)
+    monkeypatch.setattr('voicereader.api_v1.middlewares.jwt.init_api', lambda api: None)
+
     startup.register_resources(flask_app)
 
     res = flask_client.get('api/ping')
