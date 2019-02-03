@@ -12,11 +12,12 @@ from werkzeug.datastructures import FileStorage
 from bson import ObjectId
 from bson.errors import InvalidId
 
-from voicereader import mongo, file_manager
+from voicereader.services.db import mongo
+from voicereader.extensions import errors
 from voicereader.extensions.media import allowed_file
 
 from .schema import question_schema, question_with_writer_schema
-from .. import errors
+from ..middlewares import storage
 from ..user.controller import get_user
 
 api = Namespace('Question API', description='Question related operation')
@@ -87,7 +88,7 @@ class QuestionList(Resource):
 
         json_data["sound_url"] = os.path.join(request.url, 'sound', sound_file.filename)
 
-        file_manager.upload_file(SOUND_PREFIX, sound_file)
+        storage.upload_file(SOUND_PREFIX, sound_file)
 
         mongo.db.questions.insert(json_data)
 
@@ -185,5 +186,5 @@ async def add_read_to_question(obj_question_id, obj_user_id):
 class QuestionSound(Resource):
     # @jwt_required
     def get(self, filename):
-        return file_manager.fetch_file(SOUND_PREFIX, filename, as_attachment=True)
+        return storage.fetch_file(SOUND_PREFIX, filename, as_attachment=True)
 
