@@ -113,11 +113,11 @@ class User(Resource):
         try:
             body = literal_eval(json.dumps({"$set": request.get_json()}))
         except ValueError:
-            return BadRequest(errors.INVALID_PAYLOAD)
+            raise BadRequest(errors.INVALID_PAYLOAD)
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, body)
         if record_updated.matched_count == 0:
-            return NotFound(errors.NOT_EXISTS_DATA)
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         return jsonify(body['$set'])
 
@@ -166,7 +166,7 @@ class UserPhoto(Resource):
         photo_file.filename = user_id + extension
 
         if not allowed_file(photo_file.filename, PHOTO_ALLOWED_EXTENSIONS):
-            return UnsupportedMediaType(errors.UNSUPPORT_MEDIA_TYPE)
+            raise UnsupportedMediaType(errors.UNSUPPORT_MEDIA_TYPE)
 
         photo_url = os.path.join(request.url, photo_file.filename)
         query = {"$set": {
@@ -175,7 +175,7 @@ class UserPhoto(Resource):
 
         record_updated = mongo.db.users.update_one({"_id": ObjectId(user_id)}, query)
         if record_updated.matched_count == 0:
-            return NotFound(errors.NOT_EXISTS_DATA)
+            raise NotFound(errors.NOT_EXISTS_DATA)
 
         storage.upload_file(PHOTO_PREFIX, photo_file)
 
