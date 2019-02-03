@@ -65,7 +65,7 @@ def test_load_config_from_json(flask_app):
     assert 'TEST KEY' == flask_app.config['JWT_SECRET_KEY']
 
 
-def test_load_config_not_found_config(flask_app):
+def test_load_config_from_json_not_found_config(flask_app):
     with pytest.raises(FileNotFoundError):
         startup._load_config_from_json(flask_app, root='NOT/EXISTS/PATH')
 
