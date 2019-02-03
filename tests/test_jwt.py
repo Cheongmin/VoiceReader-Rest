@@ -29,3 +29,10 @@ def test_init_app_none_app():
 
     with pytest.raises(ValueError):
         jwt.init_app(None)
+
+
+def test_init_api():
+    from flask_restplus import Api
+
+    jwt = Jwt()
+    jwt.init_api(Api())
