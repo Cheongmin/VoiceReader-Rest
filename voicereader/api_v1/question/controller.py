@@ -16,7 +16,7 @@ from voicereader.services.db import mongo
 from voicereader.extensions import errors
 from voicereader.extensions.media import allowed_file
 
-from .schema import question_schema, question_with_writer_schema
+from .schema import question_with_writer_schema
 from ..middlewares import storage
 from ..user.controller import get_user
 
@@ -186,5 +186,5 @@ async def add_read_to_question(obj_question_id, obj_user_id):
 class QuestionSound(Resource):
     # @jwt_required
     def get(self, filename):
-        return storage.fetch_file(SOUND_PREFIX, filename, as_attachment=True)
+        return storage.fetch_file(SOUND_PREFIX, filename)
 

@@ -15,7 +15,7 @@ from ast import literal_eval
 from voicereader.services.db import mongo
 from voicereader.extensions import errors
 
-from .schema import answer_schema, answer_with_writer_schema, post_answer_schema
+from .schema import answer_with_writer_schema, post_answer_schema
 from ..user.controller import get_user
 
 api = Namespace('Answer about Question API', description='Answers related operation')

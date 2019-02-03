@@ -18,9 +18,8 @@ class LocalStorage:
             raise ValueError(resource)
 
         return open(os.path.join(self._upload_path, resource, filename), 'rb').read()
-        # return send_from_directory(os.path.abspath(self.upload_path), file_name)
 
-    def upload_file(self, resource, file, acl="public-read"):
+    def upload_file(self, resource, file):
         if self._upload_path is None:
             raise TypeError(self._upload_path)
 

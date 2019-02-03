@@ -27,7 +27,10 @@ def configure_app(app):
     app.json_encoder = JSONEncoder
 
 
-def load_config(app, root='../', envs=default_envs):
+def load_config(app, root=None, envs=None):
+    root = root if root else '../'
+    envs = envs if envs else default_envs
+
     _load_config_from_json(app, root)
     _load_config_from_env(app, envs)
 
