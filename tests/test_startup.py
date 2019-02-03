@@ -110,3 +110,12 @@ def test_register_blueprints(flask_app, flask_client):
 
     assert res.status_code == 200
     assert res.get_data() == b'pong'
+
+
+def test_register_resources(flask_app, flask_client):
+    startup.register_resources(flask_app)
+
+    res = flask_client.get('api/ping')
+
+    assert res.status_code == 200
+    assert res.get_data() == b'pong'

@@ -74,3 +74,12 @@ def register_blueprints(app):
 
     app.register_blueprint(api_v1)
     app.register_blueprint(api_common)
+
+
+def register_resources(app):
+    resources = [
+
+    ]
+
+    for resource in resources:
+        resource.init_app(app)
