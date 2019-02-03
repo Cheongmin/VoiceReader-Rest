@@ -62,20 +62,6 @@ def _load_config_from_env(app, envs):
         app.config[k] = env
 
 
-def configure_middleware(app):
-    from .api_v1 import middlewares as v1_middlewares
-
-    v1_middlewares.init_app(app)
-
-
-def register_blueprints(app):
-    from voicereader.api_v1.blueprint import blueprint as api_v1
-    from voicereader.api_common.controller import blueprint as api_common
-
-    app.register_blueprint(api_v1)
-    app.register_blueprint(api_common)
-
-
 def register_resources(app):
     from .api_common import resource as common_resource
     from .api_v1 import resource as v1_resource

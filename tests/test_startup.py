@@ -97,21 +97,6 @@ def test_load_config_from_env_none_envs(flask_app):
         startup._load_config_from_env(flask_app, None)
 
 
-def test_configure_middleware(monkeypatch, flask_app):
-    monkeypatch.setattr(startup, 'configure_middleware', lambda app: None)
-
-    startup.configure_middleware(flask_app)
-
-
-def test_register_blueprints(flask_app, flask_client):
-    startup.register_blueprints(flask_app)
-
-    res = flask_client.get('api/ping')
-
-    assert res.status_code == 200
-    assert res.get_data() == b'pong'
-
-
 def test_register_resources(monkeypatch, flask_app, flask_client):
     monkeypatch.setattr('voicereader.api_v1.middlewares.init_app', lambda app: None)
     monkeypatch.setattr('voicereader.api_v1.middlewares.jwt.init_api', lambda api: None)
