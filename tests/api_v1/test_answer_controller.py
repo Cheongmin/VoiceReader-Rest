@@ -129,6 +129,7 @@ def test_create_answer_success(monkeypatch, flask_client, mock_access_token):
         questions = MockQuestions
 
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
+    monkeypatch.setattr(controller, 'get_user', lambda user_id: {})
     monkeypatch.setattr(controller, 'ObjectId', lambda value=None: value)
 
     headers = {

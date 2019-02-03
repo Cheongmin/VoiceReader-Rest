@@ -77,6 +77,7 @@ def test_create_question_success(monkeypatch, flask_client, mock_access_token):
         questions = MockQuestions
 
     monkeypatch.setattr(controller, 'ObjectId', lambda value=None: value)
+    monkeypatch.setattr(controller, 'get_user', lambda user_id: {})
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
     monkeypatch.setattr(controller.storage, 'upload_file', lambda resource, file: None)
 
