@@ -1,3 +1,4 @@
+import logging
 import os
 
 
@@ -24,6 +25,9 @@ default_envs = {
 def configure_app(app):
     from voicereader.extensions.json_encoder import JSONEncoder
 
+    gunicorn_error_handlers = logging.getLogger('gunicorn.error').handlers
+
+    app.logger.handlers.extend(gunicorn_error_handlers)
     app.json_encoder = JSONEncoder
 
 
