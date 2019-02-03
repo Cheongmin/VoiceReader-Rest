@@ -458,6 +458,24 @@ def test_photo_upload_success(monkeypatch, flask_client, mock_access_token):
     assert 200 == res.status_code
 
 
+def test_photo_upload_not_include_accesstoken(monkeypatch, flask_client):
+    res = flask_client.post('/users/{}/photo'.format('VALID_USER_ID'))
+
+    assert 401 == res.status_code
+    assert res.get_json()['message']
+
+
+def test_photo_upload_invalid_accesstoken(monkeypatch, flask_client):
+    headers = {
+        'Authoriztion': 'Bearer {}'.format('INVALID_ACCESS_TOKEN')
+    }
+
+    res = flask_client.post('/users/{}/photo'.format('VALID_USER_ID'), headers=headers)
+
+    assert 401 == res.status_code
+    assert res.get_json()['message']
+
+
 def test_photo_upload_not_equal_userid(monkeypatch, flask_client, mock_access_token):
     user_id = 'NOT_EQUAL_USER_ID'
 
