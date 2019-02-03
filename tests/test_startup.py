@@ -16,7 +16,7 @@ def test_envs():
 
     yield envs
 
-    for k, v in envs.items():
+    for k in envs.keys():
         os.environ.pop(k)
 
 
