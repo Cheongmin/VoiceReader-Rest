@@ -1,6 +1,8 @@
 import os
 import boto3
 
+from botocore.exceptions import ClientError
+
 
 class S3Storage:
     _bucket_name = None
@@ -30,7 +32,13 @@ class S3Storage:
 
         key = os.path.join(resource, filename)
 
-        file = self._s3.get_object(Bucket=self._bucket_name, Key=key)
+        try:
+            file = self._s3.get_object(Bucket=self._bucket_name, Key=key)
+        except ClientError as ex:
+            if ex.response['Error']['Code'] == 'NoSuchKey':
+                return None
+            else:
+                raise ex
 
         return file['Body'].read()
 
