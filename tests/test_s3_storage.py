@@ -2,6 +2,8 @@ import boto3
 import pytest
 import io
 
+from botocore.exceptions import ClientError
+
 from werkzeug.datastructures import FileStorage
 from voicereader.services.s3_storage import S3Storage
 
@@ -73,6 +75,23 @@ def test_fetch_file_none_resource(storage):
 def test_fetch_file_none_filename(storage):
     with pytest.raises(ValueError):
         storage.fetch_file('VALID_FILE_RESOURCE', None)
+
+
+def test_fetch_file_not_exists_file(monkeypatch, storage):
+    def mock_get_object(Bucket, Key):
+        raise ClientError({
+            'Error': {
+                'Code': 'NoSuchKey'
+            }
+        }, None)
+
+    monkeypatch.setattr(storage._s3, 'get_object', mock_get_object)
+
+    expected = None
+
+    actual = storage.fetch_file('VALID_FILE_RESOURCE', 'NOT_EXISTS_FILE')
+
+    assert expected == actual
 
 
 def test_upload_file(storage):

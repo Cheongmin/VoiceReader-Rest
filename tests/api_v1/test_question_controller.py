@@ -283,6 +283,27 @@ def test_remove_question_not_equal_userid(monkeypatch, flask_client, mock_access
     assert res.get_json()['message']
 
 
+def test_get_sound_success(monkeypatch, flask_client):
+    expected_audio_io = b'abc'
+    expected_content_type = 'audio'
+
+    monkeypatch.setattr(controller.storage, 'fetch_file', lambda resource, name: (expected_audio_io, name))
+
+    res = flask_client.get('questions/sound/EXIST_FILE.mp3')
+
+    assert 200 == res.status_code
+    assert expected_content_type == res.headers['Content-Type']
+    assert expected_audio_io == res.data
+
+
+def test_get_sound_not_found(monkeypatch, flask_client):
+    monkeypatch.setattr(controller.storage, 'fetch_file', lambda resource, name: None)
+
+    res = flask_client.get('questions/sound/NOT_EXIST_FILE.mp3')
+
+    assert 404 == res.status_code
+
+
 def test_get_questions(monkeypatch):
     class MockDb:
         class MockQuestions:
