@@ -3,7 +3,7 @@ import datetime
 import os
 import asyncio
 
-from flask import jsonify, request
+from flask import jsonify, request, make_response
 from flask_restplus import Namespace, Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound, UnsupportedMediaType
@@ -35,7 +35,7 @@ post_parser.add_argument('title', type=str, location='form', required=True, help
 post_parser.add_argument('contents', type=str, location='form', required=True, help='contents of question')
 post_parser.add_argument('subtitles', type=str, location='form', required=True, help='scripts of subtitle')
 
-SOUND_PREFIX = 'sound/'
+SOUND_RESOURCE = 'sound/'
 SOUND_ALLOWED_EXTENSIONS = set(['mp3', 'm4a'])
 
 
@@ -88,7 +88,7 @@ class QuestionList(Resource):
 
         json_data["sound_url"] = os.path.join(request.url, 'sound', sound_file.filename)
 
-        storage.upload_file(SOUND_PREFIX, sound_file)
+        storage.upload_file(SOUND_RESOURCE, sound_file)
 
         mongo.db.questions.insert(json_data)
 
@@ -186,5 +186,13 @@ async def add_read_to_question(obj_question_id, obj_user_id):
 class QuestionSound(Resource):
     # @jwt_required
     def get(self, filename):
-        return storage.fetch_file(SOUND_PREFIX, filename)
+        file = storage.fetch_file(SOUND_RESOURCE, filename)
+        if not file:
+            raise NotFound()
+
+        response = make_response(file)
+        response.headers['Content-Type'] = 'audio'
+        response.status_code = 200
+
+        return response
 
