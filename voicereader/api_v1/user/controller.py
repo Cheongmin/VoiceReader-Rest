@@ -189,6 +189,8 @@ class UserPhoto(Resource):
 class UserPhotoGet(Resource):
     def get(self, user_id, file_name):
         file = storage.fetch_file(PHOTO_RESOURCE, file_name)
+        if not file:
+            raise NotFound()
 
         response = make_response(file)
         response.headers['Content-Type'] = 'image'
