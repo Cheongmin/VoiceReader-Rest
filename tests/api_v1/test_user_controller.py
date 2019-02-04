@@ -541,6 +541,19 @@ def test_photo_upload_not_found_user(monkeypatch, mock_access_token, flask_clien
     assert res.get_json()['message']
 
 
+def test_photo_get_success(monkeypatch, flask_client):
+    expected_image_io = b'abc'
+    expected_content_type = 'image'
+
+    monkeypatch.setattr(controller.storage, 'fetch_file', lambda resource, name: (expected_image_io, name))
+
+    res = flask_client.get('/users/00/photo/default_user_profile.png')
+
+    assert 200 == res.status_code
+    assert expected_content_type == res.headers['Content-Type']
+    assert expected_image_io == res.data
+
+
 def test_debug_get_users(monkeypatch, flask_client):
     class MockDb:
         class MockUsers:

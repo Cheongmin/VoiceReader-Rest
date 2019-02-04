@@ -4,7 +4,7 @@ import datetime
 import time
 import os
 
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from flask_restplus import Resource, Namespace
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.exceptions import BadRequest, Unauthorized, \
@@ -138,7 +138,7 @@ class User(Resource):
 
 
 PHOTO_KEY = 'photo'
-PHOTO_PREFIX = 'user-picture/'
+PHOTO_RESOURCE = 'user-picture'
 PHOTO_ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 post_photo_parser = api.parser()
@@ -177,7 +177,7 @@ class UserPhoto(Resource):
         if record_updated.matched_count == 0:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        storage.upload_file(PHOTO_PREFIX, photo_file)
+        storage.upload_file(PHOTO_RESOURCE, photo_file)
 
         return jsonify({
             "picture": photo_url
@@ -188,7 +188,13 @@ class UserPhoto(Resource):
 @api.doc(False)
 class UserPhotoGet(Resource):
     def get(self, user_id, file_name):
-        return storage.fetch_file(PHOTO_PREFIX, file_name)
+        file = storage.fetch_file(PHOTO_RESOURCE, file_name)
+
+        response = make_response(file)
+        response.headers['Content-Type'] = 'image'
+        response.status_code = 200
+
+        return response
 
 
 @api.route('/debug')
