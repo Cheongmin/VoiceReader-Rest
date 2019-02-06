@@ -1,4 +1,7 @@
 .idea/
+.terraform
+.env
+
 venv/
 __pycache__/
 upload/
