@@ -15,8 +15,7 @@ after_success:
 
 deploy:
   provider: script
-  script:
-    bash scripts/deploy.sh $TRAVIS_TAG
+  script: bash scripts/deploy.sh $TRAVIS_TAG
   skip_cleanup: true
   on:
     tags: true
@@ -34,5 +33,5 @@ env:
     - secure: rMrLLjWM7qysAqkxqA7K936aUCAFHJDW0S++cfITIKgaZjdGlDtOA5A5KNRSaQNHlyLuSfMhcMWlmWu/tnU/hPy8BnAAn7jy0fCB5sshUrhl0v9TCmE1q3++zG12N7Bjc1OKnhDxHOgfptdycVexyxiHS/1ArWv57j76T0pVYp7Gduk9SaVd2t4kj6gs05+v+Fy3J3B9uD6mTavejTzIODvyqyG714zun2dDEQCMH9SNOwrKxv23tYZpL24D71xk8calAfvBoA/dHPARD1zOIoMamM4kxakUePOW6caUoSlCCzLEQTXc2PivYvoxCEuz2tzONC+PLwb40Jd88Sa/pYB/Nhyl+RL1tST0ZIeRo9Kh/eOzAEUkH99tYrTkxRbqCwLKthYZoazVTvFboyt6zOFLoIir1nlt8PE3KQpSul/+OLQUr51GW8Idb3yMeFoJmuGD2lmkUMiF9mlwImQa7IRCSnCX4ctAi13jRZB3qVqKcnoRiw7NLQUfXkOZQaDKvG0OPwgRIUcoEQHt5lctWggwoodTFPlodWlv2gTqFaikqdUgpWVMYRkxYrCcbkYu9ezw9AgiYUz5bVdNVXTHDVKRVxkR1HGA2y4quBnpY51/wx3Q0KLZltWr8ji1/Jg4A4njJ1w5LxHyrN5EW28CeM/zXJqYm0Z51fpqD4zffP4=
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_98174358e853_key -iv $encrypted_98174358e853_iv -in secrets.tar.enc -out secrets.tar -d
+  - openssl aes-256-cbc -K $encrypted_fccd94e66d6f_key -iv $encrypted_fccd94e66d6f_iv -in secrets.tar.enc -out secrets.tar -d
   - tar xvf secrets.tar
