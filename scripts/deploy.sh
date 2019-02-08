@@ -1,12 +1,30 @@
 #!/usr/bin/env bash
 # Using script on Travis CI
 
+if [[ -z $1 ]]; then
+    echo "Can't get version"
+    exit 1
+fi
 
-# Create VERSION file for application versioning
-echo ${TRAVIS_TAG} > VERSION
+TARGET_VERSION=$1
 
-# Image build and deploy to Dockerhub
-bash scripts/dockerhub-deploy.sh
+# Build docker image
+bash scripts/build_docker_image.sh ${TARGET_VERSION}
+if [[ $? != 0 ]]; then
+    echo "Failed to build docker image."
+    exit 1
+fi
 
-# App deploy to AWS EC2 with fabric
-fab -f scripts/ec2-deploy.py deploy
+# Push docker image to Dockerhub
+bash scripts/push_docker_image.sh ${TARGET_VERSION}
+if [[ $? != 0 ]]; then
+    echo "Failed to push docker image."
+    exit 2
+fi
+
+
+eval `ssh-agent -s`
+ssh-add ${EC2_KEY_PATH}
+
+## Deploy app to AWS EC2 with fabric
+fab -f scripts/deploy_app.py deploy:${TARGET_VERSION}

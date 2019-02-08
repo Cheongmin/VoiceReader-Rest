@@ -1,10 +1,16 @@
 {
   "MONGO_URI": "mongodb://localhost:27017/VoiceReader",
 
+  "JWT_SECRET_KEY": "",
   "JWT_ACCESS_TOKEN_EXPIRES_SEC": 86400,
   "JWT_REFRESH_TOKEN_EXPIRES_SEC": 2592000,
   "JWT_IDENTITY_CLAIM": "sub",
   "JWT_ERROR_MESSAGE_KEY": "message",
 
-  "FIREBASE_CONFIG_PATH": "firebase-adminsdk.json"
+  "FIREBASE_CONFIG_PATH": "firebase-adminsdk.json",
+
+  "S3_BUCKET_NAME": "",
+  "S3_REGION": "",
+  "S3_KEY": "",
+  "S3_SECRET": ""
 }

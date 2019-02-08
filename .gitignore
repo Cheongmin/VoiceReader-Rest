@@ -1,4 +1,8 @@
 .idea/
+.terraform/
+.env
+
+
 venv/
 __pycache__/
 upload/
@@ -14,4 +18,9 @@ config.development.json
 config.production.json
 secrets.tar
 
+*.pub
+terraform_ec2_key
+
 VERSION
+
+inventory

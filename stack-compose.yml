@@ -17,7 +17,7 @@ services:
     depends_on:
       - api
   api:
-    image: gyuhwankim/voicereader-rest:latest
+    image: gyuhwankim/voicereader-rest:${DEPLOY_APP_VERSION}
     deploy:
       replicas: 2
       restart_policy:
