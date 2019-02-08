@@ -23,5 +23,8 @@ if [[ $? != 0 ]]; then
 fi
 
 
+eval `ssh-agent -s`
+ssh-add ${EC2_KEY_PATH}
+
 ## Deploy app to AWS EC2 with fabric
 fab -f scripts/deploy_app.py deploy:${TARGET_VERSION}
