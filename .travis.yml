@@ -16,7 +16,7 @@ after_success:
 deploy:
   provider: script
   script:
-    bash scripts/deploy.sh ${TRAVIS_TAG}
+    bash scripts/deploy.sh $TRAVIS_TAG
   skip_cleanup: true
   on:
     tags: true
