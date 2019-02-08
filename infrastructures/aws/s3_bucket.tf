@@ -31,14 +31,6 @@ resource "aws_s3_bucket" "s3_resource" {
   bucket = "${var.s3_resource_name}"
   acl = "private"
 
-  provisioner "local-exec" {
-    command = "echo S3_KEY=${aws_iam_access_key.boto3.id} > config.json"
-  }
-
-  provisioner "local-exec" {
-    command = "echo S3_SECRET=${aws_iam_access_key.boto3.secret} >> config.json"
-  }
-
   policy = <<EOF
 {
     "Version": "2008-10-17",
@@ -63,7 +55,7 @@ EOF
 resource "aws_s3_bucket_object" "default_user_profile_image" {
   key        = "user-picture/default_user_profile.png"
   bucket     = "${aws_s3_bucket.s3_resource.id}"
-  source     = "../../static/images/default_user_profile.png"
+  source     = "${var.default_profile_path}"
 }
 
 resource "aws_s3_bucket_public_access_block" "s3_resource_access_block" {

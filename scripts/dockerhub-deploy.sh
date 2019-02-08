@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-
-docker build -t ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:${TRAVIS_TAG} .
-docker tag ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:${TRAVIS_TAG} ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:latest
-
-docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:${TRAVIS_TAG}
-docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE_NAME}:latest
