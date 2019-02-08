@@ -4,13 +4,16 @@ terraform {
   # Backend Settings
   backend "s3" {
     # s3 bucket name
-    bucket     = "voicereader-terraform"
+    bucket = "voicereader-terraforms"
+
     # store file name
-    key        = "terraform.tfstate"
+    key = "terraform.tfstate"
+
     # s3 bucket region
-    region     = "ap-northeast-2"
+    region = "ap-northeast-2"
+
     # s3 encrypt
-    encrypt    = true
+    encrypt = true
   }
 }
 

@@ -1,7 +1,8 @@
 resource "aws_security_group" "sgswarm" {
   name = "sgswarm"
+
   tags {
-        Name = "sgswarm"
+    Name = "sgswarm"
   }
 
   # Allow all inbound
@@ -21,9 +22,9 @@ resource "aws_security_group" "sgswarm" {
 
   # Enable ICMP
   ingress {
-    from_port = -1
-    to_port = -1
-    protocol = "icmp"
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }

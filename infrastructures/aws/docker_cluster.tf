@@ -1,12 +1,13 @@
 resource "aws_instance" "master" {
-  ami = "${var.ami}"
+  ami           = "${var.ami}"
   instance_type = "${var.instance_type}"
-  key_name = "${var.key_pair_name}"
+  key_name      = "${var.key_pair_name}"
+
   # user_data = "${file("${var.bootstrap_path}")}"
   vpc_security_group_ids = ["${aws_security_group.sgswarm.id}"]
 
   tags {
-    Name  = "master"
+    Name = "master"
   }
 
   connection {
@@ -23,7 +24,7 @@ resource "aws_instance" "master" {
       "sudo yum install -y python",
       "sudo yum install ${var.docker_package_version} -y",
       "sudo service docker start",
-      "sudo usermod -aG docker ${var.default_ec2_username}"
+      "sudo usermod -aG docker ${var.default_ec2_username}",
     ]
   }
 

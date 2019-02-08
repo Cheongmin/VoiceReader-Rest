@@ -1,5 +1,5 @@
 variable "s3_resource_name" {
-  default = "voicereader-resource-production"
+  default = "voicereader-resource-prod"
 }
 
 variable "default_profile_path" {
@@ -30,12 +30,12 @@ variable "bootstrap_path" {
 
 variable "ami" {
   description = "Amazon Linux AMI"
-  default = "ami-018a9a930060d38aa"
+  default     = "ami-018a9a930060d38aa"
 }
 
 variable "instance_type" {
   description = "Instance type"
-  default = "t2.micro"
+  default     = "t2.micro"
 }
 
 variable "default_ec2_username" {
