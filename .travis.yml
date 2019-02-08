@@ -16,8 +16,7 @@ after_success:
 deploy:
   provider: script
   script:
-    bash scripts/deploy.sh
-    # bash scripts/dockerhub-deploy.sh && fab -f scripts/ec2-deploy.py deploy
+    bash scripts/deploy.sh ${TRAVIS_TAG}
   skip_cleanup: true
   on:
     tags: true
