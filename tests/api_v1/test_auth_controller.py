@@ -65,7 +65,7 @@ def test_get_success(monkeypatch, flask_client):
     expected_expire_in = 3600
 
     monkeypatch.setattr(controller.auth, 'verify_id_token', lambda token, app: {'sub': 'user_id'})
-    monkeypatch.setattr(controller, 'get_user_id', lambda uid: 'exists user_id')
+    monkeypatch.setattr(controller, 'get_user_id_by_firebase_uid', lambda uid: 'exists user_id')
     monkeypatch.setattr(controller, 'create_access_token', lambda user_id, expires_delta: expected_access_token)
     monkeypatch.setattr(controller, 'create_refresh_token', lambda user_id, expires_delta: expected_refresh_token)
     monkeypatch.setattr(controller, '_access_token_expire_delta', lambda: None)
@@ -106,7 +106,7 @@ def test_get_not_registered_user(monkeypatch, flask_client):
     }
 
     monkeypatch.setattr(controller.auth, 'verify_id_token', lambda token, app: {'sub': 'user_id'})
-    monkeypatch.setattr(controller, 'get_user_id', lambda uid: None)
+    monkeypatch.setattr(controller, 'get_user_id_by_firebase_uid', lambda uid: None)
 
     res = flask_client.get('/oauth2/token', headers=headers)
 
@@ -151,7 +151,7 @@ def test_post_invalid_refreshtoken(flask_client):
 
 
 def test_debug_get_success(monkeypatch, flask_client):
-    monkeypatch.setattr(controller, 'get_user', lambda user_id: {'user_id': 'EXISTS_USER_ID'})
+    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: {'user_id': 'EXISTS_USER_ID'})
     monkeypatch.setattr(controller, 'create_access_token', lambda user_id, expires_delta: 'refresh_token')
     monkeypatch.setattr(controller, '_access_token_expire_delta', lambda: None)
 

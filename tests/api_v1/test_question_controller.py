@@ -77,7 +77,7 @@ def test_create_question_success(monkeypatch, flask_client, mock_access_token):
         questions = MockQuestions
 
     monkeypatch.setattr(controller, 'ObjectId', lambda value=None: value)
-    monkeypatch.setattr(controller, 'get_user', lambda user_id: {})
+    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: {})
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
     monkeypatch.setattr(controller.storage, 'upload_file', lambda resource, file: None)
 
@@ -140,7 +140,7 @@ def test_get_question_success(monkeypatch, flask_client, mock_access_token):
         pass
 
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
-    monkeypatch.setattr(controller, 'get_user', lambda user_id: {})
+    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: {})
     monkeypatch.setattr(controller, 'add_read_to_question', mock_add_read_to_question)
     monkeypatch.setattr(controller, 'get_question_by_id', lambda que_id: {
         'writer_id': 'VALID_USER_ID'

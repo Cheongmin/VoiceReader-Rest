@@ -56,7 +56,7 @@ def test_get_answers_success(monkeypatch, flask_client, mock_access_token):
 
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
-    monkeypatch.setattr(controller, 'get_user', lambda user_id: None)
+    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: None)
 
     headers = {
         'Authorization': 'Bearer {}'.format(mock_access_token)
@@ -129,7 +129,7 @@ def test_create_answer_success(monkeypatch, flask_client, mock_access_token):
         questions = MockQuestions
 
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
-    monkeypatch.setattr(controller, 'get_user', lambda user_id: {})
+    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: {})
     monkeypatch.setattr(controller, 'ObjectId', lambda value=None: value)
 
     headers = {
@@ -239,7 +239,7 @@ def test_create_answer_not_found_question(monkeypatch, flask_client, mock_access
 
 def test_get_answer_success(monkeypatch, flask_client, mock_access_token):
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
-    monkeypatch.setattr(controller, 'get_user', lambda user_id: {})
+    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: {})
     monkeypatch.setattr(controller, 'get_answer_by_id', lambda que_id, ans_id: {
         '_id': ans_id,
         'question_id': que_id,
