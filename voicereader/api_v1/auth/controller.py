@@ -9,7 +9,7 @@ from werkzeug.exceptions import NotFound, Unauthorized
 from firebase_admin import auth, initialize_app, credentials
 
 from .schema import access_token_schema, refresh_token_schema
-from ..user.controller import get_user, get_user_id
+from ..user.repository import get_user_by_id, get_user_id_by_firebase_uid
 
 from voicereader.extensions import errors
 
@@ -61,7 +61,7 @@ class Token(Resource):
 
         firebase_uid = decoded_token['sub']
 
-        user_id = get_user_id(firebase_uid)
+        user_id = get_user_id_by_firebase_uid(firebase_uid)
         if not user_id:
             raise NotFound(errors.NOT_REGISTERED_USER)
 
@@ -108,7 +108,7 @@ class DebugToken(Resource):
         args = debug_get_parser.parse_args()
         user_id = args['user_id']
 
-        user = get_user(user_id)
+        user = get_user_by_id(user_id)
         if not user:
             raise NotFound(errors.NOT_REGISTERED_USER)
 

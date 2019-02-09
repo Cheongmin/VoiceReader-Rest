@@ -16,8 +16,11 @@ from bson import ObjectId
 from firebase_admin import auth
 from ast import literal_eval
 
+from . import repository
 from .schema import post_user_schema, user_schema
 from ..middlewares import storage
+from ..answer.schema import answer_schema
+from ..question.schema import question_schema
 
 from voicereader.services.db import mongo
 from voicereader.extensions import errors
@@ -137,6 +140,35 @@ class User(Resource):
         return '', 204
 
 
+@api.route('/<user_id>/questions')
+@api.param('user_id', description='User ID')
+@api.expect(parser)
+class UserQuestions(Resource):
+    @jwt_required
+    @api.doc(description='Fetch questions written by user_id')
+    @api.marshal_list_with(question_schema(api))
+    @api.response(403, 'Not equal User ID that included token and request user_id')
+    def get(self, user_id):
+        if get_jwt_identity() != user_id:
+            raise Forbidden()
+
+
+
+
+
+
+
+@api.route('/<user_id>/answers')
+@api.param('user_id', description='User ID')
+@api.expect(parser)
+class UserAnswers(Resource):
+    @jwt_required
+    @api.doc(description='Fetch answers written by user_id')
+    @api.marshal_list_with(answer_schema(api))
+    def get(self, user_id):
+        pass
+
+
 PHOTO_KEY = 'photo'
 PHOTO_RESOURCE = 'user-picture'
 PHOTO_ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
@@ -211,14 +243,3 @@ class DebugUser(Resource):
 
         return result
 
-
-def get_user(user_id):
-    return mongo.db.users.find_one({"_id": ObjectId(user_id)})
-
-
-def get_user_id(firebase_uid):
-    records_fetched = mongo.db.users.find_one({"fcm_uid": firebase_uid})
-    if records_fetched is None:
-        return None
-
-    return str(records_fetched['_id'])

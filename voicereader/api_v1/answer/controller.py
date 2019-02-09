@@ -16,7 +16,7 @@ from voicereader.services.db import mongo
 from voicereader.extensions import errors
 
 from .schema import answer_with_writer_schema, post_answer_schema
-from ..user.controller import get_user
+from ..user.repository import get_user_by_id
 
 api = Namespace('Answer about Question API', description='Answers related operation')
 
@@ -48,7 +48,7 @@ class AnswerList(Resource):
 
         if 'answers' in records_fetched:
             for record in records_fetched['answers']:
-                record['writer'] = get_user(record['writer_id'])
+                record['writer'] = get_user_by_id(record['writer_id'])
                 result.append(record)
 
         return result
@@ -82,7 +82,7 @@ class AnswerList(Resource):
         if records_updated.modified_count <= 0:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        body['writer'] = get_user(ObjectId(get_jwt_identity()))
+        body['writer'] = get_user_by_id(get_jwt_identity())
 
         return body, 201
 
@@ -111,7 +111,7 @@ class Answer(Resource):
         if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        record['writer'] = get_user(record['writer_id'])
+        record['writer'] = get_user_by_id(record['writer_id'])
 
         return record
 

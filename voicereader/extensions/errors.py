@@ -10,3 +10,11 @@ NOT_EXISTS_DATA = "Not exists data"
 NOT_EQUAL_USER_ID = "Not equal between request user_id and require user_id"
 NOT_REGISTERED_USER = 'Not registered user'
 ALREADY_EXISTS_USER = 'Already exists user by ID Token'
+
+
+class InvalidIdError(Exception):
+    def __init__(self, field):
+        self.field = field
+
+    def __str__(self):
+        return 'Invalid id of "{}"'.format(self.field)

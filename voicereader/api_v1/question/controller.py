@@ -18,7 +18,7 @@ from voicereader.extensions.media import allowed_file
 
 from .schema import question_with_writer_schema
 from ..middlewares import storage
-from ..user.controller import get_user
+from ..user.repository import get_user_by_id
 
 api = Namespace('Question API', description='Question related operation')
 
@@ -56,7 +56,7 @@ class QuestionList(Resource):
 
         records_fetched = get_questions(offset, size)
         for record in records_fetched:
-            record['writer'] = get_user(record['writer_id'])
+            record['writer'] = get_user_by_id(record['writer_id'])
             result.append(record)
 
         return result
@@ -92,7 +92,7 @@ class QuestionList(Resource):
 
         mongo.db.questions.insert(json_data)
 
-        json_data['writer'] = get_user(ObjectId(get_jwt_identity()))
+        json_data['writer'] = get_user_by_id(get_jwt_identity())
 
         return json_data, 201
 
@@ -116,7 +116,7 @@ class Question(Resource):
         if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        record['writer'] = get_user(record['writer_id'])
+        record['writer'] = get_user_by_id(record['writer_id'])
 
         asyncio.run(add_read_to_question(question_id, ObjectId(get_jwt_identity())))
 

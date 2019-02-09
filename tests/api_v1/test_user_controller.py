@@ -427,6 +427,18 @@ def test_user_remove_not_found_user(monkeypatch, flask_client, mock_access_token
     assert res.get_json()['message']
 
 
+def test_get_user_questions_success(monkeypatch, flask_client, mock_access_token):
+
+
+    headers = {
+        'Authorization': 'Bearer {}'.format(mock_access_token),
+    }
+
+    res = flask_client.get('/users/{}/questions'.format('VALID_USER_ID'), headers=headers)
+
+    assert 200 == res.status_code
+
+
 def test_photo_upload_success(monkeypatch, flask_client, mock_access_token):
     class MockDb:
         class MockUsers:
