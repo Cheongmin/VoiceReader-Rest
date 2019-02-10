@@ -18,3 +18,8 @@ class InvalidIdError(Exception):
 
     def __str__(self):
         return 'Invalid id of "{}"'.format(self.field)
+
+
+class NotExistsDataError(Exception):
+    def __str__(self):
+        return NOT_EXISTS_DATA

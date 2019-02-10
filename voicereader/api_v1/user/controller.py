@@ -22,6 +22,7 @@ from ..middlewares import storage
 from ..answer.schema import answer_schema
 from ..question.schema import question_schema
 from ..question import repository as question_repository
+from ..answer import repository as answer_repository
 
 from voicereader.services.db import mongo
 from voicereader.extensions import errors
@@ -170,7 +171,16 @@ class UserAnswers(Resource):
     @api.doc(description='Fetch answers written by user_id')
     @api.marshal_list_with(answer_schema(api))
     def get(self, user_id):
-        pass
+        if get_jwt_identity() != user_id:
+            raise Forbidden()
+
+        user = user_repository.get_user_by_id(user_id)
+        if user is None:
+            raise Forbidden(errors.NOT_EXISTS_DATA)
+
+        result = answer_repository.get_answers_by_user_id(user_id)
+
+        return result
 
 
 PHOTO_KEY = 'photo'

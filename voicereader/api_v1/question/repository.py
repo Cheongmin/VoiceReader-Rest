@@ -2,7 +2,37 @@ from bson import ObjectId
 from bson.errors import InvalidId
 
 from voicereader.services.db import mongo
-from voicereader.extensions.errors import InvalidIdError
+from voicereader.extensions.errors import InvalidIdError, NotExistsDataError
+
+
+def add_answer_reference(question_id, answer_id):
+    try:
+        question_id = ObjectId(question_id)
+    except InvalidId:
+        raise InvalidIdError('question_id')
+
+    try:
+        answer_id = ObjectId(answer_id)
+    except InvalidId:
+        raise InvalidIdError('answer_id')
+
+    result = mongo.db.questions.update_one({"_id": question_id}, {"$push": {"answers": answer_id}})
+    if result.modified_count <= 0:
+        raise NotExistsDataError()
+
+
+def remove_answer_reference(question_id, answer_id):
+    try:
+        question_id = ObjectId(question_id)
+    except InvalidId:
+        raise InvalidIdError('question_id')
+
+    try:
+        answer_id = ObjectId(answer_id)
+    except InvalidId:
+        raise InvalidIdError('answer_id')
+
+    mongo.db.questions.update_one({"_id": question_id}, {"$pull": {"answers": answer_id}})
 
 
 def get_questions(skip, limit):

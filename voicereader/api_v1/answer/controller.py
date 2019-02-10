@@ -1,6 +1,4 @@
 import json
-import time
-import datetime
 
 from flask import request
 from flask_restplus import Namespace, Resource
@@ -15,8 +13,12 @@ from ast import literal_eval
 from voicereader.services.db import mongo
 from voicereader.extensions import errors
 
+from . import repository as answer_repository
 from .schema import answer_with_writer_schema, post_answer_schema
-from ..user.repository import get_user_by_id
+from ..user import repository as user_repository
+from ..question import repository as question_repository
+
+from voicereader.extensions.errors import InvalidIdError, NotExistsDataError
 
 api = Namespace('Answer about Question API', description='Answers related operation')
 
@@ -39,22 +41,24 @@ class AnswerList(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        result = []
         records_fetched = mongo.db.questions.find_one(
             {"_id": question_id})
 
         if records_fetched is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
+        result = []
         if 'answers' in records_fetched:
-            for record in records_fetched['answers']:
-                record['writer'] = get_user_by_id(record['writer_id'])
-                result.append(record)
+            for answer_id in records_fetched['answers']:
+                answer = answer_repository.get_answer_by_id(question_id, answer_id)
+                answer['writer'] = user_repository.get_user_by_id(answer['writer_id'])
+
+                result.append(answer)
 
         return result
 
     @jwt_required
-    @api.doc(description='Add new answer', )
+    @api.doc(description='Add new answer')
     @api.expect(post_answer_schema(api), validate=True)
     @api.marshal_with(answer_with_writer_schema(api), code=201)
     @api.response(400, 'Invalid question_id or request payload')
@@ -62,29 +66,23 @@ class AnswerList(Resource):
     @api.response(404, 'Not exists question')
     def post(self, question_id):
         try:
-            question_id = ObjectId(question_id)
-        except InvalidId:
-            raise BadRequest(errors.INVALID_QUESTION_ID)
-
-        try:
             body = literal_eval(json.dumps(request.get_json()))
         except ValueError:
             raise BadRequest(errors.INVALID_PAYLOAD)
 
-        body['_id'] = ObjectId()
-        body['question_id'] = question_id
-        body['writer_id'] = ObjectId(get_jwt_identity())
-        body['created_date'] = time.mktime(datetime.datetime.utcnow().timetuple())
+        try:
+            result = answer_repository.create_answer(get_jwt_identity(), question_id, body)
+        except InvalidIdError as ex:
+            raise BadRequest(ex)
 
-        records_updated = mongo.db.questions.update_one({"_id": question_id},
-                                                        {"$push": {"answers": body}})
+        try:
+            question_repository.add_answer_reference(question_id, result['_id'])
+        except NotExistsDataError as ex:
+            raise NotFound(ex)
 
-        if records_updated.modified_count <= 0:
-            raise NotFound(errors.NOT_EXISTS_DATA)
+        result['writer'] = user_repository.get_user_by_id(get_jwt_identity())
 
-        body['writer'] = get_user_by_id(get_jwt_identity())
-
-        return body, 201
+        return result, 201
 
 
 @api.route('/<question_id>/answers/<answer_id>')
@@ -107,11 +105,11 @@ class Answer(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_ANSWER_ID)
 
-        record = get_answer_by_id(question_id, answer_id)
+        record = answer_repository.get_answer_by_id(question_id, answer_id)
         if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        record['writer'] = get_user_by_id(record['writer_id'])
+        record['writer'] = user_repository.get_user_by_id(record['writer_id'])
 
         return record
 
@@ -122,33 +120,15 @@ class Answer(Resource):
     @api.response(401, 'Invalid AccessToken')
     @api.response(404, 'Not exists answer')
     def delete(self, question_id, answer_id):
-        try:
-            question_id = ObjectId(question_id)
-        except InvalidId:
-            raise BadRequest(errors.INVALID_QUESTION_ID)
-
-        try:
-            answer_id = ObjectId(answer_id)
-        except InvalidId:
-            raise BadRequest(errors.INVALID_ANSWER_ID)
-
-        answer = get_answer_by_id(question_id, answer_id)
-        if answer is None:
+        # question_id Validation 필요
+        deleted = answer_repository.remove_answer(get_jwt_identity(), answer_id)
+        if not deleted:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        if str(answer['writer_id']) != str(get_jwt_identity()):
-            raise Forbidden(errors.NOT_EQUAL_USER_ID)
+        # 추가 구현 필요
+        # if str(answer['writer_id']) != str(get_jwt_identity()):
+        #     raise Forbidden(errors.NOT_EQUAL_USER_ID)
 
-        mongo.db.questions.update_one({"_id": question_id}, {"$pull": {"answers": {"_id": answer_id}}})
+        question_repository.remove_answer_reference(question_id, answer_id)
 
         return '', 204
-
-
-def get_answer_by_id(obj_question_id, obj_answer_id):
-    answer = mongo.db.questions.find_one({
-            "$and": [{"_id": obj_question_id}, {"answers._id": obj_answer_id}]}, {"answers.$"})
-
-    if answer is None:
-        return None
-
-    return answer['answers'][0]
