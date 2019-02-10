@@ -39,7 +39,7 @@ def mock_access_token(monkeypatch, flask_client, flask_app):
 
 
 def test_get_questions_success(monkeypatch, flask_client, mock_access_token):
-    monkeypatch.setattr(controller, 'get_questions', lambda offset, size: {})
+    monkeypatch.setattr(controller.question_repository, 'get_questions', lambda offset, size: {})
 
     headers = {
         'Authorization': 'Bearer {}'.format(mock_access_token)
@@ -77,7 +77,7 @@ def test_create_question_success(monkeypatch, flask_client, mock_access_token):
         questions = MockQuestions
 
     monkeypatch.setattr(controller, 'ObjectId', lambda value=None: value)
-    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: {})
+    monkeypatch.setattr(controller.user_repository, 'get_user_by_id', lambda user_id: {})
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
     monkeypatch.setattr(controller.storage, 'upload_file', lambda resource, file: None)
 
@@ -140,9 +140,9 @@ def test_get_question_success(monkeypatch, flask_client, mock_access_token):
         pass
 
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
-    monkeypatch.setattr(controller, 'get_user_by_id', lambda user_id: {})
+    monkeypatch.setattr(controller.user_repository, 'get_user_by_id', lambda user_id: {})
     monkeypatch.setattr(controller, 'add_read_to_question', mock_add_read_to_question)
-    monkeypatch.setattr(controller, 'get_question_by_id', lambda que_id: {
+    monkeypatch.setattr(controller.question_repository, 'get_question_by_id', lambda que_id: {
         'writer_id': 'VALID_USER_ID'
     })
 
@@ -186,7 +186,7 @@ def test_get_question_invalid_questionid(flask_client, mock_access_token):
 
 def test_get_question_not_found_question(monkeypatch, flask_client, mock_access_token):
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
-    monkeypatch.setattr(controller, 'get_question_by_id', lambda que_id: None)
+    monkeypatch.setattr(controller.question_repository, 'get_question_by_id', lambda que_id: None)
 
     headers = {
         'Authorization': 'Bearer {}'.format(mock_access_token)
@@ -211,7 +211,7 @@ def test_remove_question_success(monkeypatch, flask_client, mock_access_token):
     monkeypatch.setattr(controller.mongo, 'db', MockDb())
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
     monkeypatch.setattr(controller, 'get_jwt_identity', lambda: user_id)
-    monkeypatch.setattr(controller, 'get_question_by_id', lambda que_id: {
+    monkeypatch.setattr(controller.question_repository, 'get_question_by_id', lambda que_id: {
         'writer_id': user_id
     })
 
@@ -255,7 +255,7 @@ def test_remove_question_invalid_questionid(monkeypatch, flask_client, mock_acce
 
 def test_remove_question_not_found_question(monkeypatch, flask_client, mock_access_token):
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
-    monkeypatch.setattr(controller, 'get_question_by_id', lambda que_id: None)
+    monkeypatch.setattr(controller.question_repository, 'get_question_by_id', lambda que_id: None)
 
     headers = {
         'Authorization': 'Bearer {}'.format(mock_access_token)
@@ -269,7 +269,7 @@ def test_remove_question_not_found_question(monkeypatch, flask_client, mock_acce
 
 def test_remove_question_not_equal_userid(monkeypatch, flask_client, mock_access_token):
     monkeypatch.setattr(controller, 'ObjectId', lambda value: value)
-    monkeypatch.setattr(controller, 'get_question_by_id', lambda que_id: {
+    monkeypatch.setattr(controller.question_repository, 'get_question_by_id', lambda que_id: {
         'writer_id': 'NOT_EQUAL_USER_ID'
     })
 
@@ -302,40 +302,4 @@ def test_get_sound_not_found(monkeypatch, flask_client):
     res = flask_client.get('questions/sound/NOT_EXIST_FILE.mp3')
 
     assert 404 == res.status_code
-
-
-def test_get_questions(monkeypatch):
-    class MockDb:
-        class MockQuestions:
-            def aggregate(self):
-                return [
-                    {'_id': 'VALID_QUESTION_ID'}
-                ]
-
-        questions = MockQuestions
-
-    monkeypatch.setattr(controller.mongo, 'db', MockDb())
-
-    result = controller.get_questions(0, 3)
-
-    assert result
-
-
-def test_get_question_by_id(monkeypatch):
-    class MockDb:
-        class MockQuestions:
-            def aggregate(self):
-                return [
-                    {
-                        '_id': 'VALID_QUESTION_ID'
-                    }
-                ]
-
-        questions = MockQuestions
-
-    monkeypatch.setattr(controller.mongo, 'db', MockDb())
-
-    result = controller.get_question_by_id('VALID_QUESTION_ID')
-
-    assert result
 

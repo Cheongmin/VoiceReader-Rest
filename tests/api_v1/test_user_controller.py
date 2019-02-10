@@ -428,13 +428,18 @@ def test_user_remove_not_found_user(monkeypatch, flask_client, mock_access_token
 
 
 def test_get_user_questions_success(monkeypatch, flask_client, mock_access_token):
+    expected_user_id = 'VALID_USER_ID'
 
+    monkeypatch.setattr(controller.user_repository, 'get_user_by_id', lambda user_id: {'_id': user_id})
+    monkeypatch.setattr(controller.question_repository, 'get_questions_by_user_id', lambda user_id: [
+        {'_id': 'VALID_QUESTION_ID', 'writer_id': expected_user_id},
+    ])
 
     headers = {
         'Authorization': 'Bearer {}'.format(mock_access_token),
     }
 
-    res = flask_client.get('/users/{}/questions'.format('VALID_USER_ID'), headers=headers)
+    res = flask_client.get('/users/{}/questions'.format(expected_user_id), headers=headers)
 
     assert 200 == res.status_code
 

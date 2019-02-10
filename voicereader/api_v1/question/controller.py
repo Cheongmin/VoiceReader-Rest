@@ -16,9 +16,10 @@ from voicereader.services.db import mongo
 from voicereader.extensions import errors
 from voicereader.extensions.media import allowed_file
 
+from . import repository as question_repository
 from .schema import question_with_writer_schema
 from ..middlewares import storage
-from ..user.repository import get_user_by_id
+from ..user import repository as user_repository
 
 api = Namespace('Question API', description='Question related operation')
 
@@ -54,9 +55,9 @@ class QuestionList(Resource):
         size = args['size']
         result = []
 
-        records_fetched = get_questions(offset, size)
+        records_fetched = question_repository.get_questions(offset, size)
         for record in records_fetched:
-            record['writer'] = get_user_by_id(record['writer_id'])
+            record['writer'] = user_repository.get_user_by_id(record['writer_id'])
             result.append(record)
 
         return result
@@ -92,7 +93,7 @@ class QuestionList(Resource):
 
         mongo.db.questions.insert(json_data)
 
-        json_data['writer'] = get_user_by_id(get_jwt_identity())
+        json_data['writer'] = user_repository.get_user_by_id(get_jwt_identity())
 
         return json_data, 201
 
@@ -112,11 +113,11 @@ class Question(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        record = get_question_by_id(question_id)
+        record = question_repository.get_question_by_id(question_id)
         if record is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
-        record['writer'] = get_user_by_id(record['writer_id'])
+        record['writer'] = user_repository.get_user_by_id(record['writer_id'])
 
         asyncio.run(add_read_to_question(question_id, ObjectId(get_jwt_identity())))
 
@@ -135,7 +136,7 @@ class Question(Resource):
         except InvalidId:
             raise BadRequest(errors.INVALID_QUESTION_ID)
 
-        question = get_question_by_id(question_id)
+        question = question_repository.get_question_by_id(question_id)
         if question is None:
             raise NotFound(errors.NOT_EXISTS_DATA)
 
@@ -145,36 +146,6 @@ class Question(Resource):
         mongo.db.questions.delete_one({"_id": question_id})
 
         return '', 204
-
-
-def get_questions(skip, limit):
-    pipelines = [
-        {"$sort": {"created_date": -1}},
-        {"$skip": int(skip)},
-        {"$limit": int(limit)},
-        {"$addFields": {"num_of_view": {"$size": {"$ifNull": ["$read", []]}}}},
-        {"$addFields": {"num_of_answers": {"$size": {"$ifNull": ["$answers", []]}}}},
-        {"$project": {"answers": 0, "read": 0}}
-    ]
-
-    return mongo.db.questions.aggregate(pipelines)
-
-
-def get_question_by_id(obj_question_id):
-    pipelines = [
-        {"$match": {"_id": obj_question_id}},
-        {"$addFields": {"num_of_view": {"$size": {"$ifNull": ["$read", []]}}}},
-        {"$addFields": {"num_of_answers": {"$size": {"$ifNull": ["$answers", []]}}}},
-        {"$project": {"answers": 0, "read": 0}}
-    ]
-
-    result = mongo.db.questions.aggregate(pipelines)
-    result = list(result)
-
-    if len(result) == 0:
-        return None
-
-    return result[0]
 
 
 async def add_read_to_question(obj_question_id, obj_user_id):

@@ -16,11 +16,12 @@ from bson import ObjectId
 from firebase_admin import auth
 from ast import literal_eval
 
-from . import repository
+from . import repository as user_repository
 from .schema import post_user_schema, user_schema
 from ..middlewares import storage
 from ..answer.schema import answer_schema
 from ..question.schema import question_schema
+from ..question import repository as question_repository
 
 from voicereader.services.db import mongo
 from voicereader.extensions import errors
@@ -152,10 +153,13 @@ class UserQuestions(Resource):
         if get_jwt_identity() != user_id:
             raise Forbidden()
 
+        user = user_repository.get_user_by_id(user_id)
+        if user is None:
+            raise Forbidden(errors.NOT_EXISTS_DATA)
 
+        result = question_repository.get_questions_by_user_id(user_id)
 
-
-
+        return result
 
 
 @api.route('/<user_id>/answers')
